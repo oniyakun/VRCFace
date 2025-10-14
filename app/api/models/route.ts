@@ -48,13 +48,21 @@ export async function POST(request: NextRequest) {
     const jsonData = formData.get('jsonData') as string
     const isPublic = formData.get('isPublic') === 'true'
     const tagsJson = formData.get('tags') as string
-    const imageFile = formData.get('image') as File
+    const imageCount = parseInt(formData.get('imageCount') as string || '0')
 
     // 验证必填字段
-    if (!title || !description || !jsonData || !imageFile) {
+    if (!title || !description || !jsonData || imageCount === 0) {
       return NextResponse.json<ApiResponse<null>>({
         success: false,
         message: '请填写所有必填字段'
+      }, { status: 400 })
+    }
+
+    // 验证图片数量
+    if (imageCount > 5) {
+      return NextResponse.json<ApiResponse<null>>({
+        success: false,
+        message: '最多只能上传5张图片'
       }, { status: 400 })
     }
 
@@ -76,49 +84,88 @@ export async function POST(request: NextRequest) {
       // 忽略标签解析错误
     }
 
-    // 验证图片文件
-    const imageValidation = validateImageFile(imageFile)
-    if (!imageValidation.valid) {
+    // 获取所有图片文件
+    const imageFiles: File[] = []
+    for (let i = 0; i < imageCount; i++) {
+      const imageFile = formData.get(`image_${i}`) as File
+      if (imageFile) {
+        // 验证图片文件
+        const imageValidation = validateImageFile(imageFile)
+        if (!imageValidation.valid) {
+          return NextResponse.json<ApiResponse<null>>({
+            success: false,
+            message: `图片 ${i + 1} 无效: ${imageValidation.error}`
+          }, { status: 400 })
+        }
+        imageFiles.push(imageFile)
+      }
+    }
+
+    if (imageFiles.length === 0) {
       return NextResponse.json<ApiResponse<null>>({
         success: false,
-        message: imageValidation.error || '图片文件无效'
+        message: '请至少上传一张图片'
       }, { status: 400 })
     }
 
-    // 压缩图片
-    const compressedImage = await compressImage(imageFile, {
-      maxWidth: 1200,
-      maxHeight: 1200,
-      quality: 0.8,
-      format: 'jpeg'
-    })
+    // 处理所有图片
+    const processedImages: { url: string; thumbnailUrl: string }[] = []
+    
+    for (let i = 0; i < imageFiles.length; i++) {
+      const imageFile = imageFiles[i]
+      
+      try {
+        // 压缩图片
+        const compressedImage = await compressImage(imageFile, {
+          maxWidth: 1200,
+          maxHeight: 1200,
+          quality: 0.8,
+          format: 'jpeg'
+        })
 
-    // 生成缩略图
-    const thumbnail = await generateThumbnail(compressedImage, 400)
+        // 生成缩略图
+        const thumbnail = await generateThumbnail(compressedImage, 400)
 
-    // 生成存储路径
-    const imagePath = generateImagePath(user.id, compressedImage.name)
-    const thumbnailPath = generateThumbnailPath(imagePath)
+        // 生成存储路径
+        const imagePath = generateImagePath(user.id, `${Date.now()}_${i}_${compressedImage.name}`)
+        const thumbnailPath = generateThumbnailPath(imagePath)
 
-    // 上传图片到Supabase Storage
-    const [imageUpload, thumbnailUpload] = await Promise.all([
-      uploadImage(compressedImage, imagePath),
-      uploadImage(thumbnail, thumbnailPath)
-    ])
+        // 上传图片到Supabase Storage
+        const [imageUpload, thumbnailUpload] = await Promise.all([
+          uploadImage(compressedImage, imagePath),
+          uploadImage(thumbnail, thumbnailPath)
+        ])
 
-    if (!imageUpload.success) {
-      return NextResponse.json<ApiResponse<null>>({
-        success: false,
-        message: `图片上传失败: ${imageUpload.error}`
-      }, { status: 500 })
+        if (!imageUpload.success) {
+          return NextResponse.json<ApiResponse<null>>({
+            success: false,
+            message: `图片 ${i + 1} 上传失败: ${imageUpload.error}`
+          }, { status: 500 })
+        }
+
+        if (!thumbnailUpload.success) {
+          return NextResponse.json<ApiResponse<null>>({
+            success: false,
+            message: `图片 ${i + 1} 缩略图上传失败: ${thumbnailUpload.error}`
+          }, { status: 500 })
+        }
+
+        processedImages.push({
+          url: imageUpload.url!,
+          thumbnailUrl: thumbnailUpload.url!
+        })
+      } catch (error) {
+        console.error(`处理图片 ${i + 1} 失败:`, error)
+        return NextResponse.json<ApiResponse<null>>({
+          success: false,
+          message: `图片 ${i + 1} 处理失败`
+        }, { status: 500 })
+      }
     }
 
-    if (!thumbnailUpload.success) {
-      return NextResponse.json<ApiResponse<null>>({
-        success: false,
-        message: `缩略图上传失败: ${thumbnailUpload.error}`
-      }, { status: 500 })
-    }
+    // 准备图片URL数组
+    const imageUrls = processedImages.map(img => img.url)
+    const thumbnailUrls = processedImages.map(img => img.thumbnailUrl)
 
     // 开始数据库事务
     const { data: model, error: modelError } = await supabaseAdmin
@@ -127,7 +174,8 @@ export async function POST(request: NextRequest) {
         title: title.trim(),
         description: description.trim(),
         author_id: user.id,
-        thumbnail: thumbnailUpload.url,
+        thumbnail: thumbnailUrls[0], // 第一张图片的缩略图作为主缩略图
+        images: imageUrls, // 存储所有图片URL
         json_data: JSON.parse(jsonData),
         category,
         is_public: isPublic
@@ -160,12 +208,13 @@ export async function POST(request: NextRequest) {
     }
 
     // 创建模型元数据记录
+    const totalFileSize = imageFiles.reduce((total, file) => total + file.size, 0)
     const { error: metadataError } = await supabaseAdmin
       .from('model_metadata')
       .insert({
         model_id: model.id,
         version: '1.0.0',
-        file_size: compressedImage.size
+        file_size: totalFileSize
       })
 
     if (metadataError) {
@@ -209,6 +258,7 @@ export async function POST(request: NextRequest) {
           title: model.title,
           description: model.description,
           thumbnail: model.thumbnail,
+          images: model.images,
           category: model.category,
           is_public: model.is_public,
           created_at: model.created_at

@@ -48,8 +48,8 @@ export default function CreatePage() {
     isPublic: true
   })
   
-  const [selectedImage, setSelectedImage] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [selectedImages, setSelectedImages] = useState<File[]>([])
+  const [imagePreviews, setImagePreviews] = useState<string[]>([])
   const [availableTags, setAvailableTags] = useState<Tag[]>([])
   const [newTagName, setNewTagName] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -79,15 +79,26 @@ export default function CreatePage() {
         fetchTags()
       }, [])
 
-  // 处理图片选择
+  // 处理图片选择（支持多张）
   const handleImageSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
+    const files = Array.from(event.target.files || [])
+    if (files.length === 0) return
+
+    // 检查总数量限制
+    if (selectedImages.length + files.length > 5) {
+      setError('最多只能上传5张图片')
+      return
+    }
+
+    const validFiles: File[] = []
+    const newPreviews: string[] = []
+
+    for (const file of files) {
       // 验证图片文件
       const validation = validateImageFile(file)
       if (!validation.valid) {
         setError(validation.error || '图片文件无效')
-        return
+        continue
       }
       
       try {
@@ -99,25 +110,38 @@ export default function CreatePage() {
           format: 'jpeg'
         })
         
-        setSelectedImage(compressedFile)
+        validFiles.push(compressedFile)
         
         // 创建预览
         const reader = new FileReader()
         reader.onload = (e) => {
-          setImagePreview(e.target?.result as string)
+          newPreviews.push(e.target?.result as string)
+          if (newPreviews.length === validFiles.length) {
+            setSelectedImages(prev => [...prev, ...validFiles])
+            setImagePreviews(prev => [...prev, ...newPreviews])
+          }
         }
         reader.readAsDataURL(compressedFile)
-        setError(null)
       } catch (error) {
         setError('图片处理失败，请重试')
       }
     }
+    
+    if (validFiles.length > 0) {
+      setError(null)
+    }
   }
 
-  // 移除图片
-  const handleRemoveImage = () => {
-    setSelectedImage(null)
-    setImagePreview(null)
+  // 移除单张图片
+  const handleRemoveImage = (index: number) => {
+    setSelectedImages(prev => prev.filter((_, i) => i !== index))
+    setImagePreviews(prev => prev.filter((_, i) => i !== index))
+  }
+
+  // 移除所有图片
+  const handleRemoveAllImages = () => {
+    setSelectedImages([])
+    setImagePreviews([])
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
@@ -212,8 +236,8 @@ export default function CreatePage() {
       return false
     }
     
-    if (!selectedImage) {
-      setError('请选择预览图片')
+    if (selectedImages.length === 0) {
+      setError('请至少选择一张预览图片')
       return false
     }
     
@@ -257,9 +281,11 @@ export default function CreatePage() {
       submitData.append('isPublic', formData.isPublic.toString())
       submitData.append('tags', JSON.stringify(formData.tags.map(t => t.id)))
       
-      if (selectedImage) {
-        submitData.append('image', selectedImage)
-      }
+      // 添加所有图片
+      selectedImages.forEach((image, index) => {
+        submitData.append(`image_${index}`, image)
+      })
+      submitData.append('imageCount', selectedImages.length.toString())
       
       const response = await fetch('/api/models', {
         method: 'POST',
@@ -352,23 +378,22 @@ export default function CreatePage() {
             
             {/* 描述 */}
             <div>
-              <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
-                <FileText className="w-4 h-4 mr-2" />
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 描述 *
               </label>
               <textarea
                 value={formData.description}
                 onChange={(e) => handleInputChange('description', e.target.value)}
-                placeholder="详细描述您的模型特点、风格等..."
+                placeholder="描述您的模型特点、风格或使用场景..."
                 rows={4}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                maxLength={1000}
               />
             </div>
             
             {/* 分类 */}
             <div>
-              <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
-                <Tag className="w-4 h-4 mr-2" />
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 分类
               </label>
               <select
@@ -384,36 +409,65 @@ export default function CreatePage() {
               </select>
             </div>
             
-            {/* 预览图片 */}
+            {/* 图片上传 */}
             <div>
               <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
                 <ImageIcon className="w-4 h-4 mr-2" />
-                预览图片 *
+                预览图片 * (最多5张)
               </label>
               
-              {imagePreview ? (
-                <div className="relative inline-block">
-                  <img
-                    src={imagePreview}
-                    alt="预览"
-                    className="w-48 h-48 object-cover rounded-lg border border-gray-300"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleRemoveImage}
-                    className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
+              {/* 图片预览网格 */}
+              {imagePreviews.length > 0 && (
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-gray-600">
+                      已选择 {selectedImages.length} 张图片
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleRemoveAllImages}
+                      className="text-sm text-red-600 hover:text-red-800"
+                    >
+                      清空所有
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    {imagePreviews.map((preview, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={preview}
+                          alt={`预览图 ${index + 1}`}
+                          className="w-full h-32 object-cover rounded-lg border border-gray-200"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(index)}
+                          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                        {index === 0 && (
+                          <div className="absolute bottom-1 left-1 bg-blue-500 text-white text-xs px-2 py-1 rounded">
+                            封面
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              ) : (
+              )}
+              
+              {/* 上传按钮 */}
+              {selectedImages.length < 5 && (
                 <div
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-48 h-48 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors"
+                  className="w-full h-32 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors"
                 >
                   <Upload className="w-8 h-8 text-gray-400 mb-2" />
-                  <p className="text-sm text-gray-600">点击上传图片</p>
-                  <p className="text-xs text-gray-400 mt-1">支持 JPG, PNG 格式</p>
+                  <p className="text-sm text-gray-600">
+                    {selectedImages.length === 0 ? '点击上传图片' : `继续添加图片 (${5 - selectedImages.length} 张剩余)`}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">支持 JPG, PNG 格式，可多选</p>
                 </div>
               )}
               
@@ -421,11 +475,18 @@ export default function CreatePage() {
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
+                multiple
                 onChange={handleImageSelect}
                 className="hidden"
               />
+              
+              {selectedImages.length > 0 && (
+                <p className="text-xs text-gray-500 mt-2">
+                  第一张图片将作为封面显示
+                </p>
+              )}
             </div>
-            
+
             {/* 标签 */}
             <div>
               <label className="flex items-center text-sm font-medium text-gray-700 mb-2">

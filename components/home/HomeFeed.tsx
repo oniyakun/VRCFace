@@ -40,7 +40,7 @@ interface HomeModel {
     }
   }>
   height?: number
-  preview_images?: string[]
+  images?: string[]
 }
 
 interface HomeTag {
@@ -270,7 +270,7 @@ export default function HomeFeed() {
                       avatar: model.author?.avatar
                     }}
                     thumbnail={model.thumbnail}
-                    preview_images={model.preview_images}
+                    images={model.images}
                     tags={model.tags?.map((tagRelation: { tag: { id: string; name: string; category: string } }) => ({
                       id: tagRelation.tag.id,
                       name: tagRelation.tag.name
@@ -298,7 +298,7 @@ export default function HomeFeed() {
                       avatar: model.author?.avatar
                     }}
                     thumbnail={model.thumbnail}
-                    preview_images={model.preview_images}
+                    images={model.images}
                     json_data={model.json_data}
                     tags={model.tags?.map(tagRelation => ({
                       id: tagRelation.tag.id,

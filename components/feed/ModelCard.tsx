@@ -16,7 +16,7 @@ interface ModelCardProps {
     avatar?: string
   }
   thumbnail?: string
-  preview_images?: string[]
+  images?: string[]
   tags: { id: string; name: string }[]
   stats?: {
     likes: number
@@ -42,7 +42,7 @@ export default function ModelCard({
   description,
   author,
   thumbnail,
-  preview_images,
+  images,
   tags,
   stats,
   created_at,
@@ -63,8 +63,8 @@ export default function ModelCard({
   const [imageLoading, setImageLoading] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
   
-  // 获取封面图片：优先使用preview_images的第一张，否则使用thumbnail
-  const coverImage = preview_images && preview_images.length > 0 ? preview_images[0] : thumbnail
+  // 获取封面图片：优先使用images的第一张，否则使用thumbnail
+  const coverImage = images && images.length > 0 ? images[0] : thumbnail
   const { user } = useAuth()
   const router = useRouter()
 
