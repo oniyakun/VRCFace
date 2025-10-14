@@ -204,7 +204,7 @@ export default function HomeFeed() {
         {/* 标题区域 */}
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            探索精彩模型
+            发现模型
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             发现社区创作者们分享的捏脸数据，通过标签筛选找到最适合你的风格

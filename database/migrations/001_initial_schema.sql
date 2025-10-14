@@ -353,6 +353,16 @@ ALTER TABLE favorites ENABLE ROW LEVEL SECURITY;
 ALTER TABLE follows ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 
+-- 用户表策略
+CREATE POLICY "Users basic info is viewable by everyone" ON users
+    FOR SELECT USING (true);
+
+CREATE POLICY "Users can update own profile" ON users
+    FOR UPDATE USING (auth.uid() = id);
+
+CREATE POLICY "Service role can insert users" ON users
+    FOR INSERT WITH CHECK (true);
+
 -- 用户可以查看所有公开的模型
 CREATE POLICY "Public models are viewable by everyone" ON face_models
     FOR SELECT USING (is_public = true);

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
+import { useAuth } from '@/components/auth/AuthProvider'
 
 interface AuthFormProps {
   mode: 'login' | 'register'
@@ -29,6 +30,9 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [showResendButton, setShowResendButton] = useState(false)
+  
+  // 使用 AuthProvider 的 login 方法
+  const { login } = useAuth()
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -84,36 +88,41 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
     setSuccess('')
 
     try {
-      const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/register'
-      const payload = mode === 'login' 
-        ? { email: formData.email, password: formData.password }
-        : {
+      if (mode === 'login') {
+        // 使用 AuthProvider 的 login 方法
+        const result = await login(formData.email, formData.password)
+        
+        if (result.success) {
+          setSuccess('登录成功')
+          onSuccess?.(null) // 用户信息会通过 AuthProvider 自动更新
+        } else {
+          setError(result.error || '登录失败，请稍后重试')
+          
+          // 如果是登录失败且提示需要验证邮箱，显示重新发送按钮
+          if (result.error?.includes('验证')) {
+            setShowResendButton(true)
+          }
+        }
+      } else {
+        // 注册逻辑保持不变
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
             email: formData.email,
             password: formData.password,
             username: formData.username,
             displayName: formData.displayName || formData.username
-          }
+          }),
+        })
 
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      })
+        const result = await response.json()
 
-      const result = await response.json()
-
-      if (result.success) {
-        setSuccess(result.message || (mode === 'login' ? '登录成功' : '注册成功'))
-        
-        if (mode === 'login' && result.data?.user) {
-          // 使用 authManager 更新认证状态
-          const { authManager } = await import('@/lib/auth')
-          authManager.setUser(result.data.user, result.data.session?.accessToken)
+        if (result.success) {
+          setSuccess(result.message || '注册成功')
           
-          onSuccess?.(result.data.user)
-        } else if (mode === 'register') {
           // 注册成功后切换到登录模式
           setTimeout(() => {
             onModeChange('login')
@@ -125,13 +134,8 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
               confirmPassword: ''
             })
           }, 2000)
-        }
-      } else {
-        setError(result.error || '操作失败，请稍后重试')
-        
-        // 如果是登录失败且提示需要验证邮箱，显示重新发送按钮
-        if (mode === 'login' && result.error?.includes('验证')) {
-          setShowResendButton(true)
+        } else {
+          setError(result.error || '注册失败，请稍后重试')
         }
       }
     } catch (error) {

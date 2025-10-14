@@ -113,8 +113,28 @@ export default function Navigation() {
           {/* 用户菜单 */}
           <div className="flex items-center space-x-4">
             {isAuthenticated && user ? (
-              <div className="relative">
-                <button
+              <>
+                {/* 发帖按钮 */}
+                <Link href="/create">
+                  <Button 
+                    variant="primary" 
+                    size="sm"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center space-x-2"
+                  >
+                    <svg 
+                      className="w-4 h-4" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span>发帖</span>
+                  </Button>
+                </Link>
+                
+                <div className="relative">
+                  <button
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
                   className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 focus:outline-none"
                 >
@@ -143,32 +163,33 @@ export default function Navigation() {
                 </button>
 
                 {/* 下拉菜单 */}
-                {isMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
-                    <button
-                      onClick={handleProfileClick}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      个人主页
-                    </button>
-                    <Link
-                      href="/settings"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      设置
-                    </Link>
-                    <hr className="my-1" />
-                    <button
-                      onClick={handleLogout}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      退出登录
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
+                 {isMenuOpen && (
+                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                     <button
+                       onClick={handleProfileClick}
+                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                     >
+                       个人主页
+                     </button>
+                     <Link
+                       href="/settings"
+                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                       onClick={() => setIsMenuOpen(false)}
+                     >
+                       设置
+                     </Link>
+                     <hr className="my-1" />
+                     <button
+                       onClick={handleLogout}
+                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                     >
+                       退出登录
+                     </button>
+                   </div>
+                 )}
+               </div>
+               </>
+             ) : (
               <div className="flex items-center space-x-3">
                 <Link href="/auth">
                   <Button variant="outline" size="sm">

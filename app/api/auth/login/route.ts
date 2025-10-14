@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 获取用户详细信息
-    const { data: userData, error: userError } = await supabaseAdmin
+    let { data: userData, error: userError } = await supabaseAdmin
       .from('users')
       .select(`
         id,
@@ -145,13 +145,111 @@ export async function POST(request: NextRequest) {
       .eq('id', authData.user.id)
       .single()
 
-    if (userError || !userData) {
+    // 如果用户记录不存在，创建一个新的用户记录
+    if (userError && userError.code === 'PGRST116') {
+      console.log('User record not found during login, creating new user record for:', authData.user.email)
+      
+      // 生成用户名（从邮箱前缀生成，确保唯一性）
+      const baseUsername = authData.user.email?.split('@')[0] || 'user'
+      let username = baseUsername
+      let counter = 1
+      
+      // 检查用户名是否已存在，如果存在则添加数字后缀
+      while (true) {
+        const { data: existingUser } = await supabaseAdmin
+          .from('users')
+          .select('username')
+          .eq('username', username)
+          .single()
+        
+        if (!existingUser) break
+        username = `${baseUsername}${counter}`
+        counter++
+      }
+
+      // 创建新用户记录
+      const { data: newUser, error: createError } = await supabaseAdmin
+        .from('users')
+        .insert({
+          id: authData.user.id,
+          username: username,
+          email: authData.user.email,
+          display_name: authData.user.user_metadata?.display_name || username,
+          avatar: authData.user.user_metadata?.avatar_url || null,
+          bio: null,
+          is_verified: false,
+          role: 'user'
+        })
+        .select(`
+          id,
+          username,
+          email,
+          display_name,
+          avatar,
+          bio,
+          is_verified,
+          role,
+          created_at,
+          updated_at
+        `)
+        .single()
+
+      if (createError) {
+        console.error('Failed to create user record during login:', createError)
+        return NextResponse.json<ApiResponse<null>>({
+          success: false,
+          error: '创建用户记录失败'
+        }, { status: 500 })
+      }
+
+      // 创建用户统计记录
+      await supabaseAdmin
+        .from('user_stats')
+        .insert({
+          user_id: authData.user.id,
+          models_count: 0,
+          likes_received: 0,
+          comments_received: 0,
+          followers_count: 0,
+          following_count: 0
+        })
+
+      userData = {
+        ...newUser,
+        stats: [{
+          models_count: 0,
+          likes_received: 0,
+          comments_received: 0,
+          followers_count: 0,
+          following_count: 0
+        }]
+      }
+    } else if (userError || !userData) {
       console.error('User data fetch error:', userError)
       return NextResponse.json<ApiResponse<null>>({
         success: false,
         error: '获取用户信息失败'
       }, { status: 500 })
     }
+
+    // 确保 userData 不为 null 并且有正确的结构
+    if (!userData) {
+      return NextResponse.json<ApiResponse<null>>({
+        success: false,
+        error: '用户数据获取失败'
+      }, { status: 500 })
+    }
+
+    // 获取用户统计数据，如果没有则使用默认值
+    const userStats = userData.stats && Array.isArray(userData.stats) && userData.stats.length > 0 
+      ? userData.stats[0] 
+      : {
+          models_count: 0,
+          likes_received: 0,
+          comments_received: 0,
+          followers_count: 0,
+          following_count: 0
+        }
 
     // 返回用户信息和会话信息
     return NextResponse.json<ApiResponse<{ user: any; session: any }>>({
@@ -169,12 +267,12 @@ export async function POST(request: NextRequest) {
           role: userData.role,
           createdAt: userData.created_at,
           updatedAt: userData.updated_at,
-          stats: userData.stats || {
-            modelsCount: 0,
-            likesReceived: 0,
-            commentsReceived: 0,
-            followersCount: 0,
-            followingCount: 0
+          stats: {
+            modelsCount: userStats.models_count || 0,
+            likesReceived: userStats.likes_received || 0,
+            commentsReceived: userStats.comments_received || 0,
+            followersCount: userStats.followers_count || 0,
+            followingCount: userStats.following_count || 0
           }
         },
         session: {
