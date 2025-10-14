@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button'
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [error, showError] = useState('')
   const [success, setSuccess] = useState('')
   const router = useRouter()
 
@@ -16,18 +16,18 @@ export default function ForgotPasswordPage() {
     e.preventDefault()
     
     if (!email) {
-      setError('请输入邮箱地址')
+      showError('请输入邮箱地址')
       return
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
-      setError('邮箱格式不正确')
+      showError('邮箱格式不正确')
       return
     }
 
     setLoading(true)
-    setError('')
+    showError('')
     setSuccess('')
 
     try {
@@ -48,11 +48,11 @@ export default function ForgotPasswordPage() {
           router.push('/auth')
         }, 3000)
       } else {
-        setError(result.error || '发送失败，请稍后重试')
+        showError(result.error || '发送失败，请稍后重试')
       }
     } catch (error) {
       console.error('Forgot password error:', error)
-      setError('网络错误，请稍后重试')
+      showError('网络错误，请稍后重试')
     } finally {
       setLoading(false)
     }
@@ -80,7 +80,7 @@ export default function ForgotPasswordPage() {
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value)
-                  setError('')
+                  showError('')
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="请输入您的邮箱地址"

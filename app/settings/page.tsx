@@ -3,10 +3,12 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/auth/AuthProvider'
+import { useToast } from '@/components/ui/ToastProvider'
 import { Button } from '@/components/ui/Button'
 
 export default function SettingsPage() {
   const { user, isAuthenticated, isLoading, session } = useAuth()
+  const { showSuccess, showError } = useToast()
   const router = useRouter()
   const [formData, setFormData] = useState({
     displayName: '',
@@ -53,13 +55,13 @@ export default function SettingsPage() {
       })
 
       if (response.ok) {
-        alert('设置保存成功！')
+        showSuccess('设置保存成功！')
       } else {
-        alert('保存失败，请稍后重试')
+        showError('保存失败，请稍后重试')
       }
     } catch (error) {
       console.error('Save settings error:', error)
-      alert('保存失败，请稍后重试')
+      showError('保存失败，请稍后重试')
     } finally {
       setIsSaving(false)
     }

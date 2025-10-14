@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/auth/AuthProvider'
+import { useToast } from '@/components/ui/ToastProvider'
 import { Button } from '@/components/ui/Button'
 import { Upload, X, Plus, Tag, Image as ImageIcon, FileText, Code, User, Palette } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -29,6 +30,7 @@ interface FormData {
 
 export default function CreatePage() {
   const { user, isAuthenticated, isLoading } = useAuth()
+  const { showSuccess, showError } = useToast()
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
   
@@ -80,7 +82,7 @@ export default function CreatePage() {
 
     // 检查总数量限制
     if (selectedImages.length + files.length > 5) {
-      setError('最多只能上传5张图片')
+      showError('最多只能上传5张图片')
       return
     }
 
@@ -93,7 +95,7 @@ export default function CreatePage() {
         // 验证图片文件
         const validation = validateImageFile(file)
         if (!validation.valid) {
-          setError(validation.error || '图片文件无效')
+          showError(validation.error || '图片文件无效')
           continue
         }
         
@@ -125,7 +127,7 @@ export default function CreatePage() {
         setError(null)
       }
     } catch (error) {
-      setError('图片处理失败，请重试')
+      showError('图片处理失败，请重试')
     }
   }
 
@@ -180,7 +182,7 @@ export default function CreatePage() {
     )
     
     if (existingTag) {
-      setError('标签名称已存在')
+      showError('标签名称已存在')
       return
     }
     
@@ -218,23 +220,23 @@ export default function CreatePage() {
   // 表单验证
   const validateForm = (): boolean => {
     if (!formData.title.trim()) {
-      setError('请输入标题')
+      showError('请输入标题')
       return false
     }
     
     if (!formData.description.trim()) {
-      setError('请输入描述')
+      showError('请输入描述')
       return false
     }
     
     if (selectedImages.length === 0) {
-      setError('请至少选择一张预览图片')
+      showError('请至少选择一张预览图片')
       return false
     }
     
     // 如果有捏脸数据，则验证JSON格式
     if (formData.jsonData.trim() && !validateJsonData(formData.jsonData)) {
-      setError('捏脸数据格式不正确，请输入有效的JSON格式')
+      showError('捏脸数据格式不正确，请输入有效的JSON格式')
       return false
     }
     
@@ -255,7 +257,7 @@ export default function CreatePage() {
       const { data: { session } } = await supabase.auth.getSession()
       
       if (!session?.access_token) {
-        setError('请先登录')
+        showError('请先登录')
         return
       }
       
@@ -284,7 +286,7 @@ export default function CreatePage() {
             throw new Error(`创建标签 "${newTag.name}" 失败`)
           }
         } catch (error) {
-          setError(`创建标签失败: ${error instanceof Error ? error.message : '未知错误'}`)
+          showError(`创建标签失败: ${error instanceof Error ? error.message : '未知错误'}`)
           return
         }
       }
@@ -319,16 +321,16 @@ export default function CreatePage() {
       
       if (response.ok) {
         const data = await response.json()
-        setSuccess(true)
+        showSuccess('发布成功！正在跳转到您的个人主页...')
         setTimeout(() => {
           router.push(`/profile/${user?.id}`)
         }, 2000)
       } else {
         const errorData = await response.json()
-        setError(errorData.message || '发布失败，请重试')
+        showError(errorData.message || '发布失败，请重试')
       }
     } catch (error) {
-      setError('发布失败，请检查网络连接')
+      showError('发布失败，请检查网络连接')
     } finally {
       setIsSubmitting(false)
     }

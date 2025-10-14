@@ -27,7 +27,7 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
     confirmPassword: ''
   })
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [error, showError] = useState('')
   const [success, setSuccess] = useState('')
   const [showResendButton, setShowResendButton] = useState(false)
   
@@ -37,40 +37,40 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
-    setError('')
+    showError('')
   }
 
   const validateForm = (): boolean => {
     if (!formData.email || !formData.password) {
-      setError('邮箱和密码为必填项')
+      showError('邮箱和密码为必填项')
       return false
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(formData.email)) {
-      setError('邮箱格式不正确')
+      showError('邮箱格式不正确')
       return false
     }
 
     if (formData.password.length < 6) {
-      setError('密码长度至少为6位')
+      showError('密码长度至少为6位')
       return false
     }
 
     if (mode === 'register') {
       if (!formData.username) {
-        setError('用户名为必填项')
+        showError('用户名为必填项')
         return false
       }
 
       const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/
       if (!usernameRegex.test(formData.username)) {
-        setError('用户名只能包含字母、数字和下划线，长度为3-20位')
+        showError('用户名只能包含字母、数字和下划线，长度为3-20位')
         return false
       }
 
       if (formData.password !== formData.confirmPassword) {
-        setError('两次输入的密码不一致')
+        showError('两次输入的密码不一致')
         return false
       }
     }
@@ -84,7 +84,7 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
     if (!validateForm()) return
 
     setLoading(true)
-    setError('')
+    showError('')
     setSuccess('')
 
     try {
@@ -96,7 +96,7 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
           setSuccess('登录成功')
           onSuccess?.(null) // 用户信息会通过 AuthProvider 自动更新
         } else {
-          setError(result.error || '登录失败，请稍后重试')
+          showError(result.error || '登录失败，请稍后重试')
           
           // 如果是登录失败且提示需要验证邮箱，显示重新发送按钮
           if (result.error?.includes('验证')) {
@@ -135,12 +135,12 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
             })
           }, 2000)
         } else {
-          setError(result.error || '注册失败，请稍后重试')
+          showError(result.error || '注册失败，请稍后重试')
         }
       }
     } catch (error) {
       console.error('Auth error:', error)
-      setError('网络错误，请稍后重试')
+      showError('网络错误，请稍后重试')
     } finally {
       setLoading(false)
     }
@@ -148,12 +148,12 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
 
   const handleResendConfirmation = async () => {
     if (!formData.email) {
-      setError('请输入邮箱地址')
+      showError('请输入邮箱地址')
       return
     }
 
     setLoading(true)
-    setError('')
+    showError('')
     setSuccess('')
 
     try {
@@ -171,11 +171,11 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
         setSuccess(result.message)
         setShowResendButton(false)
       } else {
-        setError(result.error || '发送验证邮件失败')
+        showError(result.error || '发送验证邮件失败')
       }
     } catch (error) {
       console.error('Resend confirmation error:', error)
-      setError('网络错误，请稍后重试')
+      showError('网络错误，请稍后重试')
     } finally {
       setLoading(false)
     }

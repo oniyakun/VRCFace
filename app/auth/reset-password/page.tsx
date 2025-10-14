@@ -9,7 +9,7 @@ export default function ResetPasswordPage() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [error, showError] = useState('')
   const [success, setSuccess] = useState('')
   const [tokens, setTokens] = useState<{ accessToken: string; refreshToken: string } | null>(null)
   
@@ -32,7 +32,7 @@ export default function ResetPasswordPage() {
     console.log('Type:', type)
     
     if (!accessToken || !refreshToken || type !== 'recovery') {
-      setError('无效的重置链接或链接已过期')
+      showError('无效的重置链接或链接已过期')
       return
     }
 
@@ -41,17 +41,17 @@ export default function ResetPasswordPage() {
 
   const validateForm = (): boolean => {
     if (!password || !confirmPassword) {
-      setError('请填写所有字段')
+      showError('请填写所有字段')
       return false
     }
 
     if (password.length < 6) {
-      setError('密码长度至少为6位')
+      showError('密码长度至少为6位')
       return false
     }
 
     if (password !== confirmPassword) {
-      setError('两次输入的密码不一致')
+      showError('两次输入的密码不一致')
       return false
     }
 
@@ -64,7 +64,7 @@ export default function ResetPasswordPage() {
     if (!validateForm() || !tokens) return
 
     setLoading(true)
-    setError('')
+    showError('')
     setSuccess('')
 
     try {
@@ -89,11 +89,11 @@ export default function ResetPasswordPage() {
           router.push('/auth')
         }, 3000)
       } else {
-        setError(result.error || '密码重置失败，请稍后重试')
+        showError(result.error || '密码重置失败，请稍后重试')
       }
     } catch (error) {
       console.error('Reset password error:', error)
-      setError('网络错误，请稍后重试')
+      showError('网络错误，请稍后重试')
     } finally {
       setLoading(false)
     }
@@ -145,7 +145,7 @@ export default function ResetPasswordPage() {
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value)
-                  setError('')
+                  showError('')
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="请输入新密码（至少6位）"
@@ -164,7 +164,7 @@ export default function ResetPasswordPage() {
                 value={confirmPassword}
                 onChange={(e) => {
                   setConfirmPassword(e.target.value)
-                  setError('')
+                  showError('')
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="请再次输入新密码"

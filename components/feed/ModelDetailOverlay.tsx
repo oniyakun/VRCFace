@@ -15,7 +15,7 @@ interface ModelDetailOverlayProps {
 export default function ModelDetailOverlay({ id, onClose, className = '' }: ModelDetailOverlayProps) {
   const [model, setModel] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [error, showError] = useState<string | null>(null)
   const [isVisible, setIsVisible] = useState(false)
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
@@ -27,15 +27,15 @@ export default function ModelDetailOverlay({ id, onClose, className = '' }: Mode
         setLoading(true)
         const result = await getFaceModelById(id)
         if (result.error) {
-          setError(result.error)
+          showError(result.error)
         } else if (result.data) {
           setModel(result.data)
         } else {
-          setError('未找到模型')
+          showError('未找到模型')
         }
       } catch (err) {
         console.error('获取模型详情失败:', err)
-        setError('获取模型详情失败')
+        showError('获取模型详情失败')
       } finally {
         setLoading(false)
       }

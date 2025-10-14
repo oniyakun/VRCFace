@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/auth/AuthProvider'
+import { useToast } from '@/components/ui/ToastProvider'
 import { Button } from '@/components/ui/Button'
 import { Upload, X, Plus, Tag, Image as ImageIcon, FileText, Code, User, Palette } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -34,6 +35,7 @@ interface EditModelModalProps {
 
 export default function EditModelModal({ model, isOpen, onClose, onSave }: EditModelModalProps) {
   const { user, isAuthenticated } = useAuth()
+  const { showSuccess, showError } = useToast()
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
   
@@ -124,7 +126,7 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
 
     // 检查总数量限制
     if (imagePreviews.length + selectedImages.length + files.length > 5) {
-      setError('最多只能上传5张图片')
+      showError('最多只能上传5张图片')
       return
     }
 
@@ -137,7 +139,7 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
         // 验证图片文件
         const validation = validateImageFile(file)
         if (!validation.valid) {
-          setError(validation.error || '图片文件无效')
+          showError(validation.error || '图片文件无效')
           continue
         }
         
@@ -161,7 +163,7 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
         setError(null)
       }
     } catch (error) {
-      setError('图片处理失败，请重试')
+      showError('图片处理失败，请重试')
     }
   }
 
@@ -231,11 +233,11 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
   // 表单验证
   const validateForm = () => {
     if (!formData.title.trim()) {
-      setError('请输入标题')
+      showError('请输入标题')
       return false
     }
     if (!formData.description.trim()) {
-      setError('请输入描述')
+      showError('请输入描述')
       return false
     }
     
@@ -244,7 +246,7 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
       try {
         JSON.parse(formData.jsonData)
       } catch {
-        setError('JSON数据格式不正确')
+        showError('JSON数据格式不正确')
         return false
       }
     }
@@ -266,7 +268,7 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
       const { data: { session } } = await supabase.auth.getSession()
       
       if (!session?.access_token) {
-        setError('请先登录')
+        showError('请先登录')
         return
       }
       
@@ -311,14 +313,15 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
       
       if (response.ok) {
         const data = await response.json()
+        showSuccess('作品更新成功！')
         onSave(data.data)
         onClose()
       } else {
         const errorData = await response.json()
-        setError(errorData.message || '更新失败，请重试')
+        showError(errorData.message || '更新失败，请重试')
       }
     } catch (error) {
-      setError('更新失败，请检查网络连接')
+      showError('更新失败，请检查网络连接')
     } finally {
       setIsSubmitting(false)
     }

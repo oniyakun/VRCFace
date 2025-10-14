@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { User } from '@/types'
 import { Button } from '@/components/ui/Button'
+import { useToast } from '@/components/ui/ToastProvider'
 import { Star, Heart, MessageCircle, Eye, Download, Edit, Trash2, MoreVertical } from 'lucide-react'
 import ModelDetailOverlay from '@/components/feed/ModelDetailOverlay'
 import EditModelModal from './EditModelModal'
@@ -23,6 +24,7 @@ interface UserProfileData extends User {
 
 export default function UserProfile({ userId, isOwnProfile = false }: UserProfileProps) {
   const router = useRouter()
+  const { showError } = useToast()
   const [user, setUser] = useState<UserProfileData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -85,7 +87,7 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
       setShowDeleteConfirm(null)
     } catch (error) {
       console.error('删除模型失败:', error)
-      alert(error instanceof Error ? error.message : '删除失败')
+      showError(error instanceof Error ? error.message : '删除失败')
     } finally {
       setIsDeleting(false)
     }
@@ -132,11 +134,11 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
         }
       } else {
         console.error('获取收藏列表失败:', result.error)
-        setError(result.error || '获取收藏列表失败')
+        showError(result.error || '获取收藏列表失败')
       }
     } catch (error) {
       console.error('Fetch favorites error:', error)
-      setError('网络错误，请稍后重试')
+      showError('网络错误，请稍后重试')
     } finally {
       setFavoritesLoading(false)
     }
@@ -178,11 +180,11 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
         console.log('UserProfile - User data set:', result.data.user)
       } else {
         console.error('UserProfile - API error:', result.error)
-        setError(result.error || '获取用户信息失败')
+        showError(result.error || '获取用户信息失败')
       }
     } catch (error) {
       console.error('Fetch user profile error:', error)
-      setError('网络错误，请稍后重试')
+      showError('网络错误，请稍后重试')
     } finally {
       setLoading(false)
     }
@@ -194,7 +196,7 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
     try {
       const token = localStorage.getItem('accessToken')
       if (!token) {
-        setError('请先登录')
+        showError('请先登录')
         return
       }
 
@@ -220,11 +222,11 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
           }
         } : null)
       } else {
-        setError(result.error || '操作失败')
+        showError(result.error || '操作失败')
       }
     } catch (error) {
       console.error('Follow error:', error)
-      setError('网络错误，请稍后重试')
+      showError('网络错误，请稍后重试')
     }
   }
 

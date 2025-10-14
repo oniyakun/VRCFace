@@ -3,6 +3,7 @@
 import { Heart, MessageCircle, Copy, User } from 'lucide-react'
 import Link from 'next/link'
 import Button from '@/components/ui/Button'
+import { useToast } from '@/components/ui/ToastProvider'
 
 // 模拟数据 - 后续将从 Supabase 获取
 const mockPosts = [
@@ -45,6 +46,8 @@ const mockPosts = [
 ]
 
 export default function ContentPreview() {
+  const { showSuccess, showError } = useToast()
+  
   const handleCopyJSON = (postId: number) => {
     // 模拟复制 JSON 数据
     const mockJSON = {
@@ -57,8 +60,8 @@ export default function ContentPreview() {
     }
     
     navigator.clipboard.writeText(JSON.stringify(mockJSON, null, 2))
-      .then(() => alert('JSON 数据已复制到剪贴板！'))
-      .catch(() => alert('复制失败，请重试'))
+      .then(() => showSuccess('JSON 数据已复制到剪贴板！'))
+      .catch(() => showError('复制失败，请重试'))
   }
 
   return (

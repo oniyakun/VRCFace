@@ -85,7 +85,7 @@ export default function FeedPage({ className = '' }: FeedPageProps) {
   const [initialLoading, setInitialLoading] = useState(true)
   const [hasMore, setHasMore] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
-  const [error, setError] = useState<string | null>(null)
+  const [error, showError] = useState<string | null>(null)
 
   // 初始化数据
   useEffect(() => {
@@ -94,7 +94,7 @@ export default function FeedPage({ className = '' }: FeedPageProps) {
 
   const loadInitialData = async () => {
     setInitialLoading(true)
-    setError(null)
+    showError(null)
     
     try {
       // 并行加载标签和模型数据
@@ -110,7 +110,7 @@ export default function FeedPage({ className = '' }: FeedPageProps) {
       }
 
       if (modelsResult.error) {
-        setError(modelsResult.error)
+        showError(modelsResult.error)
       } else {
         const transformedModels = modelsResult.data.map(transformModelData)
         setModels(transformedModels)
@@ -119,7 +119,7 @@ export default function FeedPage({ className = '' }: FeedPageProps) {
       }
     } catch (err) {
       console.error('加载数据失败:', err)
-      setError('加载数据失败，请稍后重试')
+      showError('加载数据失败，请稍后重试')
     } finally {
       setInitialLoading(false)
     }

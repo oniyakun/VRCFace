@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/components/auth/AuthProvider'
+import { ToastProvider } from '@/components/ui/ToastProvider'
 import Navigation from '@/components/layout/Navigation'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -27,10 +28,12 @@ export default function RootLayout({
     <html lang="zh-CN">
       <body className={inter.className}>
         <AuthProvider>
-          <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-            <Navigation />
-            {children}
-          </div>
+          <ToastProvider>
+            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+              <Navigation />
+              {children}
+            </div>
+          </ToastProvider>
         </AuthProvider>
       </body>
     </html>
