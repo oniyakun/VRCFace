@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { User } from '@/types'
 import { Button } from '@/components/ui/Button'
 import { Star, Heart, MessageCircle, Eye, Download, Edit, Trash2, MoreVertical } from 'lucide-react'
@@ -21,6 +22,7 @@ interface UserProfileData extends User {
 }
 
 export default function UserProfile({ userId, isOwnProfile = false }: UserProfileProps) {
+  const router = useRouter()
   const [user, setUser] = useState<UserProfileData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -226,6 +228,10 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
     }
   }
 
+  const handleEditProfile = () => {
+    router.push('/settings')
+  }
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('zh-CN', {
       year: 'numeric',
@@ -295,7 +301,7 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
               {/* 操作按钮 */}
               <div className="flex gap-3 mt-4 md:mt-0">
                 {isOwnProfile ? (
-                  <Button variant="outline">
+                  <Button variant="outline" onClick={handleEditProfile}>
                     编辑资料
                   </Button>
                 ) : (

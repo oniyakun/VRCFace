@@ -167,3 +167,165 @@ export async function GET(
     }, { status: 500 })
   }
 }
+
+// 更新用户信息
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const userId = params.id
+
+    if (!userId) {
+      return NextResponse.json<ApiResponse<null>>({
+        success: false,
+        message: '用户ID不能为空'
+      }, { status: 400 })
+    }
+
+    // 获取认证token
+    const authHeader = request.headers.get('authorization')
+    const token = authHeader?.replace('Bearer ', '')
+
+    if (!token) {
+      return NextResponse.json<ApiResponse<null>>({
+        success: false,
+        message: '未提供认证token'
+      }, { status: 401 })
+    }
+
+    // 验证用户身份
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
+    
+    if (authError || !user) {
+      console.error('认证失败:', authError)
+      return NextResponse.json<ApiResponse<null>>({
+        success: false,
+        message: '认证失败'
+      }, { status: 401 })
+    }
+
+    // 检查是否是用户本人
+    if (user.id !== userId) {
+      return NextResponse.json<ApiResponse<null>>({
+        success: false,
+        message: '无权限修改其他用户信息'
+      }, { status: 403 })
+    }
+
+    // 解析请求体
+    const body = await request.json()
+    const { displayName, bio, avatar } = body
+
+    // 构建更新数据
+    const updateData: any = {}
+
+    if (displayName !== undefined) {
+      if (displayName && displayName.trim().length > 50) {
+        return NextResponse.json<ApiResponse<null>>({
+          success: false,
+          message: '显示名称不能超过50个字符'
+        }, { status: 400 })
+      }
+      updateData.display_name = displayName?.trim() || null
+    }
+
+    if (bio !== undefined) {
+      if (bio && bio.trim().length > 500) {
+        return NextResponse.json<ApiResponse<null>>({
+          success: false,
+          message: '个人简介不能超过500个字符'
+        }, { status: 400 })
+      }
+      updateData.bio = bio?.trim() || null
+    }
+
+    if (avatar !== undefined) {
+      updateData.avatar = avatar?.trim() || null
+    }
+
+    // 如果没有要更新的字段
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json<ApiResponse<null>>({
+        success: false,
+        message: '没有要更新的字段'
+      }, { status: 400 })
+    }
+
+    // 添加更新时间
+    updateData.updated_at = new Date().toISOString()
+
+    // 更新用户信息
+    const { data: updatedUser, error: updateError } = await supabaseAdmin
+      .from('users')
+      .update(updateData)
+      .eq('id', userId)
+      .select(`
+        id,
+        username,
+        email,
+        display_name,
+        avatar,
+        bio,
+        is_verified,
+        role,
+        created_at,
+        updated_at
+      `)
+      .single()
+
+    if (updateError || !updatedUser) {
+      console.error('Update user error:', updateError)
+      return NextResponse.json<ApiResponse<null>>({
+        success: false,
+        message: '更新用户信息失败'
+      }, { status: 500 })
+    }
+
+    // 获取用户统计信息
+    const { data: statsData } = await supabaseAdmin
+      .from('user_stats')
+      .select(`
+        models_count,
+        likes_received,
+        comments_received,
+        followers_count,
+        following_count
+      `)
+      .eq('user_id', userId)
+      .single()
+
+    const responseUser = {
+      id: updatedUser.id,
+      username: updatedUser.username,
+      email: updatedUser.email,
+      displayName: updatedUser.display_name,
+      avatar: updatedUser.avatar,
+      bio: updatedUser.bio,
+      isVerified: updatedUser.is_verified,
+      role: updatedUser.role,
+      createdAt: updatedUser.created_at,
+      updatedAt: updatedUser.updated_at,
+      stats: statsData || {
+        modelsCount: 0,
+        likesReceived: 0,
+        commentsReceived: 0,
+        followersCount: 0,
+        followingCount: 0
+      }
+    }
+
+    return NextResponse.json<ApiResponse<{ user: any }>>({
+      success: true,
+      message: '用户信息更新成功',
+      data: { user: responseUser }
+    })
+
+  } catch (error) {
+    console.error('Update user error:', error)
+    return NextResponse.json<ApiResponse<null>>({
+      success: false,
+      message: '服务器内部错误'
+    }, { status: 500 })
+  }
+}

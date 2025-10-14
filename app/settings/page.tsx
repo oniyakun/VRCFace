@@ -6,7 +6,7 @@ import { useAuth } from '@/components/auth/AuthProvider'
 import { Button } from '@/components/ui/Button'
 
 export default function SettingsPage() {
-  const { user, isAuthenticated, isLoading } = useAuth()
+  const { user, isAuthenticated, isLoading, session } = useAuth()
   const router = useRouter()
   const [formData, setFormData] = useState({
     displayName: '',
@@ -39,7 +39,7 @@ export default function SettingsPage() {
   }
 
   const handleSave = async () => {
-    if (!user) return
+    if (!user || !session) return
 
     setIsSaving(true)
     try {
@@ -47,7 +47,7 @@ export default function SettingsPage() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify(formData)
       })
