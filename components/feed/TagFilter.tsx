@@ -91,7 +91,7 @@ export default function TagFilter({
           )}
         >
           <User className="w-4 h-4 mr-1" />
-          模型名字 ({selectedModelNameCount})
+          模型名字
         </button>
         <button
           onClick={() => setActiveSection('model_style')}
@@ -103,7 +103,7 @@ export default function TagFilter({
           )}
         >
           <Palette className="w-4 h-4 mr-1" />
-          模型风格 ({selectedModelStyleCount})
+          模型风格
         </button>
       </div>
 

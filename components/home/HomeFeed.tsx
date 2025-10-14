@@ -286,9 +286,10 @@ export default function HomeFeed() {
                     }}
                     thumbnail={model.thumbnail}
                     images={model.images}
-                    tags={model.tags?.map((tagRelation: { tag: { id: string; name: string; category: string } }) => ({
+                    tags={model.tags?.map((tagRelation: { tag: { id: string; name: string; category: string; tag_type: string } }) => ({
                       id: tagRelation.tag.id,
-                      name: tagRelation.tag.name
+                      name: tagRelation.tag.name,
+                      tag_type: tagRelation.tag.tag_type
                     })) || []}
                     stats={model.stats}
                     created_at={model.created_at}
@@ -317,7 +318,8 @@ export default function HomeFeed() {
                     json_data={model.json_data}
                     tags={model.tags?.map(tagRelation => ({
                       id: tagRelation.tag.id,
-                      name: tagRelation.tag.name
+                      name: tagRelation.tag.name,
+                      tag_type: (tagRelation.tag as any).tag_type
                     })) || []}
                     stats={model.stats}
                     created_at={model.created_at}

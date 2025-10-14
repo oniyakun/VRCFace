@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, description, category, color } = body
+    const { name, description, category, color, tag_type } = body
 
     // 验证必填字段
     if (!name || !name.trim()) {
@@ -129,6 +129,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json<ApiResponse<null>>({
         success: false,
         message: '无效的标签分类'
+      }, { status: 400 })
+    }
+
+    // 验证标签类型
+    const validTagTypes = ['model_name', 'model_style']
+    const tagType = tag_type || 'model_style'
+    if (!validTagTypes.includes(tagType)) {
+      return NextResponse.json<ApiResponse<null>>({
+        success: false,
+        message: '无效的标签类型'
       }, { status: 400 })
     }
 
@@ -183,6 +193,7 @@ export async function POST(request: NextRequest) {
         description: description?.trim() || null,
         category: tagCategory,
         color: tagColor,
+        tag_type: tagType,
         usage_count: 0
       })
       .select()

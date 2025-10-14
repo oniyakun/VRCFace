@@ -24,7 +24,7 @@ export async function getFaceModels(page = 1, limit = 12, filters?: {
         *,
         author:users!face_models_author_id_fkey(id, username, display_name, role, avatar),
         stats:model_stats(views, downloads, likes, comments),
-        tags:model_tags(tag:tags(id, name, category))
+        tags:model_tags(tag:tags(id, name, category, tag_type))
       `)
       .eq('is_public', true)
 
@@ -92,7 +92,7 @@ export async function getFaceModelById(id: string) {
         *,
         author:users!face_models_author_id_fkey(id, username, display_name, role, avatar),
         stats:model_stats(views, downloads, likes, comments),
-        tags:model_tags(tag:tags(id, name, category)),
+        tags:model_tags(tag:tags(id, name, category, tag_type)),
         comments:comments(
           id, content, created_at,
           author:users!comments_author_id_fkey(id, username, display_name, avatar)

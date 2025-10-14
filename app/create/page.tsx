@@ -14,26 +14,18 @@ interface Tag {
   name: string
   color?: string
   tag_type?: 'model_name' | 'model_style'
+  isNew?: boolean // 标记是否为新创建的标签
 }
 
 interface FormData {
   title: string
   description: string
-  category: string
   tags: Tag[]
   jsonData: string
   isPublic: boolean
 }
 
-const CATEGORIES = [
-  { value: 'cute', label: '可爱' },
-  { value: 'cool', label: '酷炫' },
-  { value: 'funny', label: '搞笑' },
-  { value: 'gentle', label: '温柔' },
-  { value: 'sci-fi', label: '科幻' },
-  { value: 'animal', label: '动物' },
-  { value: 'other', label: '其他' }
-]
+
 
 export default function CreatePage() {
   const { user, isAuthenticated, isLoading } = useAuth()
@@ -43,7 +35,6 @@ export default function CreatePage() {
   const [formData, setFormData] = useState<FormData>({
     title: '',
     description: '',
-    category: 'other',
     tags: [],
     jsonData: '',
     isPublic: true
@@ -54,6 +45,7 @@ export default function CreatePage() {
   const [availableTags, setAvailableTags] = useState<Tag[]>([])
   const [newTagName, setNewTagName] = useState('')
   const [newTagType, setNewTagType] = useState<'model_name' | 'model_style'>('model_style')
+  const [pendingNewTags, setPendingNewTags] = useState<Tag[]>([]) // 存储待提交的新标签
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
@@ -95,15 +87,16 @@ export default function CreatePage() {
     const validFiles: File[] = []
     const newPreviews: string[] = []
 
-    for (const file of files) {
-      // 验证图片文件
-      const validation = validateImageFile(file)
-      if (!validation.valid) {
-        setError(validation.error || '图片文件无效')
-        continue
-      }
-      
-      try {
+    try {
+      // 处理所有文件
+      for (const file of files) {
+        // 验证图片文件
+        const validation = validateImageFile(file)
+        if (!validation.valid) {
+          setError(validation.error || '图片文件无效')
+          continue
+        }
+        
         // 压缩图片用于预览
         const compressedFile = await compressImage(file, {
           maxWidth: 800,
@@ -114,23 +107,25 @@ export default function CreatePage() {
         
         validFiles.push(compressedFile)
         
-        // 创建预览
-        const reader = new FileReader()
-        reader.onload = (e) => {
-          newPreviews.push(e.target?.result as string)
-          if (newPreviews.length === validFiles.length) {
-            setSelectedImages(prev => [...prev, ...validFiles])
-            setImagePreviews(prev => [...prev, ...newPreviews])
-          }
-        }
-        reader.readAsDataURL(compressedFile)
-      } catch (error) {
-        setError('图片处理失败，请重试')
+        // 创建预览 - 使用 Promise 来确保同步处理
+        const preview = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = (e) => resolve(e.target?.result as string)
+          reader.onerror = reject
+          reader.readAsDataURL(compressedFile)
+        })
+        
+        newPreviews.push(preview)
       }
-    }
-    
-    if (validFiles.length > 0) {
-      setError(null)
+      
+      // 一次性更新状态
+      if (validFiles.length > 0) {
+        setSelectedImages(prev => [...prev, ...validFiles])
+        setImagePreviews(prev => [...prev, ...newPreviews])
+        setError(null)
+      }
+    } catch (error) {
+      setError('图片处理失败，请重试')
     }
   }
 
@@ -175,45 +170,38 @@ export default function CreatePage() {
     }))
   }
 
-  // 创建新标签
+  // 创建新标签（本地存储，不立即提交到数据库）
   const handleCreateNewTag = async () => {
     if (!newTagName.trim()) return
     
-    try {
-      // 获取认证token
-      const { data: { session } } = await supabase.auth.getSession()
-      
-      if (!session?.access_token) {
-        setError('请先登录')
-        return
-      }
-      
-      const response = await fetch('/api/tags', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify({
-          name: newTagName.trim(),
-          category: 'style',
-          tag_type: newTagType
-        })
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        const newTag = data.data.tag
-        setAvailableTags(prev => [...prev, newTag])
-        handleAddTag(newTag)
-        setNewTagName('')
-      } else {
-        const errorData = await response.json()
-        setError(errorData.message || '创建标签失败')
-      }
-    } catch (error) {
-      setError('创建标签失败')
+    // 检查是否已存在相同名称的标签
+    const existingTag = [...availableTags, ...pendingNewTags].find(
+      tag => tag.name.toLowerCase() === newTagName.trim().toLowerCase()
+    )
+    
+    if (existingTag) {
+      setError('标签名称已存在')
+      return
     }
+    
+    // 创建临时ID和新标签对象
+    const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    const newTag: Tag = {
+      id: tempId,
+      name: newTagName.trim(),
+      tag_type: newTagType,
+      isNew: true
+    }
+    
+    // 添加到待提交列表
+    setPendingNewTags(prev => [...prev, newTag])
+    
+    // 添加到已选标签
+    handleAddTag(newTag)
+    
+    // 清空输入
+    setNewTagName('')
+    setError(null)
   }
 
   // 验证JSON数据
@@ -275,14 +263,49 @@ export default function CreatePage() {
         return
       }
       
-      // 创建FormData用于文件上传
+      // 首先创建新标签
+      const createdTagIds: string[] = []
+      
+      for (const newTag of pendingNewTags) {
+        try {
+          const tagResponse = await fetch('/api/tags', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`
+            },
+            body: JSON.stringify({
+              name: newTag.name,
+              category: 'style',
+              tag_type: newTag.tag_type
+            })
+          })
+          
+          if (tagResponse.ok) {
+            const tagData = await tagResponse.json()
+            createdTagIds.push(tagData.data.tag.id)
+          } else {
+            throw new Error(`创建标签 "${newTag.name}" 失败`)
+          }
+        } catch (error) {
+          setError(`创建标签失败: ${error instanceof Error ? error.message : '未知错误'}`)
+          return
+        }
+      }
+      
+      // 准备最终的标签ID列表（现有标签 + 新创建的标签）
+      const existingTagIds = formData.tags
+        .filter(tag => !tag.isNew)
+        .map(tag => tag.id)
+      
+      const allTagIds = [...existingTagIds, ...createdTagIds]
+      
       const submitData = new FormData()
       submitData.append('title', formData.title)
       submitData.append('description', formData.description)
-      submitData.append('category', formData.category)
       submitData.append('jsonData', formData.jsonData)
       submitData.append('isPublic', formData.isPublic.toString())
-      submitData.append('tags', JSON.stringify(formData.tags.map(t => t.id)))
+      submitData.append('tags', JSON.stringify(allTagIds))
       
       // 添加所有图片
       selectedImages.forEach((image, index) => {
@@ -394,24 +417,6 @@ export default function CreatePage() {
               />
             </div>
             
-            {/* 分类 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                分类
-              </label>
-              <select
-                value={formData.category}
-                onChange={(e) => handleInputChange('category', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                {CATEGORIES.map(category => (
-                  <option key={category.value} value={category.value}>
-                    {category.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            
             {/* 图片上传 */}
             <div>
               <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
@@ -513,10 +518,16 @@ export default function CreatePage() {
                           .map(tag => (
                             <span
                               key={tag.id}
-                              className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800"
+                              className={cn(
+                                "inline-flex items-center px-3 py-1 rounded-full text-sm",
+                                tag.isNew 
+                                  ? "bg-blue-200 text-blue-900 border border-blue-300" 
+                                  : "bg-blue-100 text-blue-800"
+                              )}
                             >
                               <User className="w-3 h-3 mr-1" />
                               {tag.name}
+                              {tag.isNew && <span className="ml-1 text-xs">(新)</span>}
                               <button
                                 type="button"
                                 onClick={() => handleRemoveTag(tag.id)}
@@ -543,10 +554,16 @@ export default function CreatePage() {
                           .map(tag => (
                             <span
                               key={tag.id}
-                              className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-purple-100 text-purple-800"
+                              className={cn(
+                                "inline-flex items-center px-3 py-1 rounded-full text-sm",
+                                tag.isNew 
+                                  ? "bg-purple-200 text-purple-900 border border-purple-300" 
+                                  : "bg-purple-100 text-purple-800"
+                              )}
                             >
                               <Palette className="w-3 h-3 mr-1" />
                               {tag.name}
+                              {tag.isNew && <span className="ml-1 text-xs">(新)</span>}
                               <button
                                 type="button"
                                 onClick={() => handleRemoveTag(tag.id)}
