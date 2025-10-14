@@ -151,7 +151,7 @@ export default function ModelDetailOverlay({ id, onClose, className = '' }: Mode
               ) : (
                 <>
                   <Copy className="w-4 h-4" />
-                  复制数据
+                  复制捏脸数据
                 </>
               )}
             </button>
@@ -229,38 +229,6 @@ export default function ModelDetailOverlay({ id, onClose, className = '' }: Mode
                 </div>
               </div>
 
-              {/* 统计信息 */}
-              <div className="grid grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
-                <div className="text-center">
-                  <div className="flex items-center justify-center mb-1">
-                    <Eye className="w-4 h-4 mr-1 text-gray-500" />
-                    <span className="text-lg font-semibold text-gray-900">{(model.stats?.[0]?.views) || 0}</span>
-                  </div>
-                  <div className="text-sm text-gray-500">浏览</div>
-                </div>
-                <div className="text-center">
-                  <div className="flex items-center justify-center mb-1">
-                    <Download className="w-4 h-4 mr-1 text-gray-500" />
-                    <span className="text-lg font-semibold text-gray-900">{(model.stats?.[0]?.downloads) || 0}</span>
-                  </div>
-                  <div className="text-sm text-gray-500">下载</div>
-                </div>
-                <div className="text-center">
-                  <div className="flex items-center justify-center mb-1">
-                    <Heart className="w-4 h-4 mr-1 text-gray-500" />
-                    <span className="text-lg font-semibold text-gray-900">{(model.stats?.[0]?.likes) || 0}</span>
-                  </div>
-                  <div className="text-sm text-gray-500">点赞</div>
-                </div>
-                <div className="text-center">
-                  <div className="flex items-center justify-center mb-1">
-                    <MessageCircle className="w-4 h-4 mr-1 text-gray-500" />
-                    <span className="text-lg font-semibold text-gray-900">{(model.stats?.[0]?.comments) || 0}</span>
-                  </div>
-                  <div className="text-sm text-gray-500">评论</div>
-                </div>
-              </div>
-
               {/* 标签 */}
               {model.tags && model.tags.length > 0 && (
                 <div>
@@ -281,7 +249,7 @@ export default function ModelDetailOverlay({ id, onClose, className = '' }: Mode
               {/* JSON 数据展示 */}
               {model.json_data && (
                 <div>
-                  <h3 className="text-lg font-semibold mb-3">模型数据</h3>
+                  <h3 className="text-lg font-semibold mb-3">捏脸数据</h3>
                   <div className="bg-gray-100 rounded-lg p-4 max-h-64 overflow-y-auto">
                     <pre className="text-sm text-gray-700 whitespace-pre-wrap">
                       {JSON.stringify(model.json_data, null, 2)}
