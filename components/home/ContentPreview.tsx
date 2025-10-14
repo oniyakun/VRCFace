@@ -166,17 +166,7 @@ export default function ContentPreview() {
           ))}
         </div>
 
-        {/* 查看更多按钮 */}
-        <div className="text-center">
-          <Link href="/feed">
-            <Button variant="outline" size="lg">
-              查看更多模型
-            </Button>
-          </Link>
-          <p className="text-sm text-gray-500 mt-4">
-            探索完整的瀑布流布局和高级筛选功能
-          </p>
-        </div>
+
       </div>
     </section>
   )

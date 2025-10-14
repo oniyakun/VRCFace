@@ -78,8 +78,6 @@ export default function ModelCard({
       onClick={() => {
         if (onOpenDetail) {
           onOpenDetail(id)
-        } else {
-          router.push(`/feed/${id}`)
         }
       }}
     >
