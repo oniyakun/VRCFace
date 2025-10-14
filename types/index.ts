@@ -91,11 +91,13 @@ export interface Tag {
   description?: string
   color?: string
   category: TagCategory
+  tag_type: TagType // 新增：标签类型
   usageCount: number
   createdAt: Date
 }
 
 export type TagCategory = 'emotion' | 'style' | 'character' | 'technical'
+export type TagType = 'model_name' | 'model_style' // 新增：模型名字 vs 模型风格
 
 // 收藏相关类型
 export interface Favorite {

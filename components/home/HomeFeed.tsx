@@ -47,6 +47,9 @@ interface HomeTag {
   id: string
   name: string
   category: string
+  description?: string
+  color?: string
+  tag_type?: string
   usage_count?: number
 }
 
@@ -114,8 +117,14 @@ export default function HomeFeed() {
     // 在服务器端渲染时或数据未加载时返回空数组
     if (!isClient || models.length === 0) {
       return tags.map(tag => ({
-        ...tag,
-        usage_count: tag.usage_count || 0
+        id: tag.id,
+        name: tag.name,
+        description: tag.description,
+        color: tag.color,
+        category: tag.category as any,
+        tag_type: tag.tag_type as any,
+        usageCount: tag.usage_count || 0,
+        createdAt: new Date()
       }))
     }
 
@@ -135,10 +144,16 @@ export default function HomeFeed() {
 
     // 计算每个标签在基础筛选结果中的数量
     return tags.map(tag => ({
-      ...tag,
-      usage_count: baseModels.filter(model => 
+      id: tag.id,
+      name: tag.name,
+      description: tag.description,
+      color: tag.color,
+      category: tag.category as any,
+      tag_type: tag.tag_type as any,
+      usageCount: baseModels.filter(model => 
         model.tags?.some(tagRelation => tagRelation.tag.id === tag.id)
-      ).length
+      ).length,
+      createdAt: new Date()
     }))
   }, [models, tags, searchTerm, isClient])
 

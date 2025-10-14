@@ -1,14 +1,18 @@
 'use client'
 
 import { useState } from 'react'
-import { Search, X, Hash } from 'lucide-react'
+import { Search, X, Hash, User, Palette } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface Tag {
   id: string
   name: string
-  usage_count: number
+  description?: string
   color?: string
+  category: string
+  tag_type: 'model_name' | 'model_style'
+  usageCount: number
+  createdAt: Date
 }
 
 interface TagFilterProps {
@@ -27,12 +31,34 @@ export default function TagFilter({
   className = '' 
 }: TagFilterProps) {
   const [searchTerm, setSearchTerm] = useState('')
+  const [activeSection, setActiveSection] = useState<'model_name' | 'model_style'>('model_name')
 
-  const filteredTags = tags.filter(tag =>
-    tag.name.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  // 按类型分组标签
+  const modelNameTags = tags.filter(tag => tag.tag_type === 'model_name')
+  const modelStyleTags = tags.filter(tag => tag.tag_type === 'model_style')
 
+  // 根据当前选择的区域和搜索词过滤标签
+  const getFilteredTags = () => {
+    const tagsToFilter = activeSection === 'model_name' ? modelNameTags : modelStyleTags
+    
+    return tagsToFilter.filter(tag =>
+      tag.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  }
+
+  const filteredTags = getFilteredTags()
   const isTagSelected = (tagId: string) => selectedTags.includes(tagId)
+
+  // 获取已选标签的统计
+  const selectedModelNameCount = selectedTags.filter(tagId => {
+    const tag = tags.find(t => t.id === tagId)
+    return tag?.tag_type === 'model_name'
+  }).length
+
+  const selectedModelStyleCount = selectedTags.filter(tagId => {
+    const tag = tags.find(t => t.id === tagId)
+    return tag?.tag_type === 'model_style'
+  }).length
 
   return (
     <div className={cn('bg-white rounded-lg shadow-sm border p-6', className)}>
@@ -53,12 +79,40 @@ export default function TagFilter({
         )}
       </div>
 
+      {/* 标签类型切换 */}
+      <div className="flex mb-4 bg-gray-100 rounded-lg p-1">
+        <button
+          onClick={() => setActiveSection('model_name')}
+          className={cn(
+            'flex-1 flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium transition-colors',
+            activeSection === 'model_name'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
+          )}
+        >
+          <User className="w-4 h-4 mr-1" />
+          模型名字 ({selectedModelNameCount})
+        </button>
+        <button
+          onClick={() => setActiveSection('model_style')}
+          className={cn(
+            'flex-1 flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium transition-colors',
+            activeSection === 'model_style'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
+          )}
+        >
+          <Palette className="w-4 h-4 mr-1" />
+          模型风格 ({selectedModelStyleCount})
+        </button>
+      </div>
+
       {/* 搜索框 */}
       <div className="relative mb-4">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
         <input
           type="text"
-          placeholder="搜索标签..."
+          placeholder={`搜索${activeSection === 'model_name' ? '模型名字' : activeSection === 'model_style' ? '模型风格' : ''}标签...`}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-colors"
@@ -77,8 +131,18 @@ export default function TagFilter({
                 <button
                   key={tagId}
                   onClick={() => onTagToggle(tagId)}
-                  className="inline-flex items-center px-3 py-1 bg-primary-100 text-primary-800 text-sm rounded-full hover:bg-primary-200 transition-colors"
+                  className={cn(
+                    'inline-flex items-center px-3 py-1 text-sm rounded-full hover:opacity-80 transition-colors',
+                    tag.tag_type === 'model_name'
+                      ? 'bg-blue-100 text-blue-800'
+                      : 'bg-purple-100 text-purple-800'
+                  )}
                 >
+                  {tag.tag_type === 'model_name' ? (
+                    <User className="w-3 h-3 mr-1" />
+                  ) : (
+                    <Palette className="w-3 h-3 mr-1" />
+                  )}
                   {tag.name}
                   <X className="w-3 h-3 ml-1" />
                 </button>
@@ -102,18 +166,29 @@ export default function TagFilter({
               className={cn(
                 'w-full flex items-center justify-between px-3 py-2 rounded-lg text-left transition-colors',
                 isTagSelected(tag.id)
-                  ? 'bg-primary-50 text-primary-700 border border-primary-200'
+                  ? tag.tag_type === 'model_name'
+                    ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                    : 'bg-purple-50 text-purple-700 border border-purple-200'
                   : 'hover:bg-gray-50 text-gray-700'
               )}
             >
-              <span className="font-medium">{tag.name}</span>
+              <div className="flex items-center">
+                {tag.tag_type === 'model_name' ? (
+                  <User className="w-4 h-4 mr-2 text-blue-500" />
+                ) : (
+                  <Palette className="w-4 h-4 mr-2 text-purple-500" />
+                )}
+                <span className="font-medium">{tag.name}</span>
+              </div>
               <span className={cn(
                 'text-xs px-2 py-1 rounded-full',
                 isTagSelected(tag.id)
-                  ? 'bg-primary-200 text-primary-800'
+                  ? tag.tag_type === 'model_name'
+                    ? 'bg-blue-200 text-blue-800'
+                    : 'bg-purple-200 text-purple-800'
                   : 'bg-gray-200 text-gray-600'
               )}>
-                {tag.usage_count}
+                {tag.usageCount}
               </span>
             </button>
           ))

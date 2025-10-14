@@ -44,7 +44,10 @@ interface FeedModel {
 interface FeedTag {
   id: string
   name: string
+  description?: string
+  color?: string
   category: string
+  tag_type?: string
   usage_count?: number
 }
 
@@ -284,7 +287,12 @@ export default function FeedPage({ className = '' }: FeedPageProps) {
                 tags={tags.map(tag => ({
                   id: tag.id,
                   name: tag.name,
-                  usage_count: tag.usage_count || 0
+                  description: tag.description,
+                  color: tag.color,
+                  category: tag.category as any,
+                  tag_type: tag.tag_type as any,
+                  usageCount: tag.usage_count || 0,
+                  createdAt: new Date()
                 }))}
                 selectedTags={selectedTags}
                 onTagToggle={handleTagToggle}

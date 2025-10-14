@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Heart, MessageCircle, Copy, Download, Eye, Calendar, User, Star } from 'lucide-react'
+import { Heart, MessageCircle, Copy, Download, Eye, Calendar, User, Star, User as UserIcon, Palette } from 'lucide-react'
 import { cn, formatRelativeTime } from '@/lib/utils'
 import Button from '@/components/ui/Button'
 import { useAuth } from '@/components/auth/AuthProvider'
@@ -17,7 +17,7 @@ interface ModelCardProps {
   }
   thumbnail?: string
   images?: string[]
-  tags: { id: string; name: string }[]
+  tags: { id: string; name: string; tag_type?: 'model_name' | 'model_style' }[]
   stats?: {
     likes: number
     comments: number
@@ -261,19 +261,59 @@ export default function ModelCard({
 
         {/* 标签 */}
         {tags && tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-3">
-            {tags.slice(0, 3).map((tag) => (
-              <span
-                key={tag.id}
-                className="inline-block px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md hover:bg-primary-100 hover:text-primary-700 transition-colors cursor-pointer"
-              >
-                {tag.name}
-              </span>
-            ))}
-            {tags.length > 3 && (
-              <span className="inline-block px-2 py-1 bg-gray-100 text-gray-500 text-xs rounded-md">
-                +{tags.length - 3}
-              </span>
+          <div className="mb-3">
+            {/* 模型名字标签 */}
+            {tags.filter(tag => tag.tag_type === 'model_name').length > 0 && (
+              <div className="flex flex-wrap gap-1 mb-2">
+                <div className="flex items-center text-xs text-blue-600 font-medium mb-1 w-full">
+                  <UserIcon className="w-3 h-3 mr-1" />
+                  模型名字
+                </div>
+                {tags
+                  .filter(tag => tag.tag_type === 'model_name')
+                  .slice(0, 2)
+                  .map((tag) => (
+                    <span
+                      key={tag.id}
+                      className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-md hover:bg-blue-200 transition-colors cursor-pointer"
+                    >
+                      <UserIcon className="w-3 h-3 mr-1" />
+                      {tag.name}
+                    </span>
+                  ))}
+                {tags.filter(tag => tag.tag_type === 'model_name').length > 2 && (
+                  <span className="inline-block px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded-md">
+                    +{tags.filter(tag => tag.tag_type === 'model_name').length - 2}
+                  </span>
+                )}
+              </div>
+            )}
+            
+            {/* 模型风格标签 */}
+            {tags.filter(tag => tag.tag_type === 'model_style' || !tag.tag_type).length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                <div className="flex items-center text-xs text-purple-600 font-medium mb-1 w-full">
+                  <Palette className="w-3 h-3 mr-1" />
+                  模型风格
+                </div>
+                {tags
+                  .filter(tag => tag.tag_type === 'model_style' || !tag.tag_type)
+                  .slice(0, 2)
+                  .map((tag) => (
+                    <span
+                      key={tag.id}
+                      className="inline-flex items-center px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-md hover:bg-purple-200 transition-colors cursor-pointer"
+                    >
+                      <Palette className="w-3 h-3 mr-1" />
+                      {tag.name}
+                    </span>
+                  ))}
+                {tags.filter(tag => tag.tag_type === 'model_style' || !tag.tag_type).length > 2 && (
+                  <span className="inline-block px-2 py-1 bg-purple-100 text-purple-600 text-xs rounded-md">
+                    +{tags.filter(tag => tag.tag_type === 'model_style' || !tag.tag_type).length - 2}
+                  </span>
+                )}
+              </div>
             )}
           </div>
         )}

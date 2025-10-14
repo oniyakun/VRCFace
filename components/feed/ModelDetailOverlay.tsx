@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { getFaceModelById } from '@/lib/supabase'
-import { Calendar, User, Eye, Download, Heart, MessageCircle, X, Image as ImageIcon, Copy, Check } from 'lucide-react'
+import { Calendar, User, Eye, Download, Heart, MessageCircle, X, Image as ImageIcon, Copy, Check, User as UserIcon, Palette } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import ImageLightbox from '@/components/ui/ImageLightbox'
 
@@ -232,17 +232,51 @@ export default function ModelDetailOverlay({ id, onClose, className = '' }: Mode
               {/* 标签 */}
               {model.tags && model.tags.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-semibold mb-3">标签</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {model.tags.map((tr: any) => (
-                      <span 
-                        key={tr.tag.id} 
-                        className="px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm"
-                      >
-                        {tr.tag.name}
-                      </span>
-                    ))}
-                  </div>
+                  {/* 模型名字标签 */}
+                  {model.tags.filter((tr: any) => tr.tag.tag_type === 'model_name').length > 0 && (
+                    <div className="mb-6">
+                      <h3 className="text-lg font-semibold mb-3 flex items-center">
+                        <UserIcon className="w-5 h-5 mr-2 text-blue-600" />
+                        模型名字
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {model.tags
+                          .filter((tr: any) => tr.tag.tag_type === 'model_name')
+                          .map((tr: any) => (
+                            <span 
+                              key={tr.tag.id} 
+                              className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm hover:bg-blue-200 transition-colors"
+                            >
+                              <UserIcon className="w-4 h-4 mr-1" />
+                              {tr.tag.name}
+                            </span>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 模型风格标签 */}
+                  {model.tags.filter((tr: any) => tr.tag.tag_type === 'model_style' || !tr.tag.tag_type).length > 0 && (
+                    <div className="mb-6">
+                      <h3 className="text-lg font-semibold mb-3 flex items-center">
+                        <Palette className="w-5 h-5 mr-2 text-purple-600" />
+                        模型风格
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {model.tags
+                          .filter((tr: any) => tr.tag.tag_type === 'model_style' || !tr.tag.tag_type)
+                          .map((tr: any) => (
+                            <span 
+                              key={tr.tag.id} 
+                              className="inline-flex items-center px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm hover:bg-purple-200 transition-colors"
+                            >
+                              <Palette className="w-4 h-4 mr-1" />
+                              {tr.tag.name}
+                            </span>
+                          ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

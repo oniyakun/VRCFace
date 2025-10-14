@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { Button } from '@/components/ui/Button'
-import { Upload, X, Plus, Tag, Image as ImageIcon, FileText, Code } from 'lucide-react'
+import { Upload, X, Plus, Tag, Image as ImageIcon, FileText, Code, User, Palette } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { compressImage, validateImageFile } from '@/lib/imageUtils'
 import { supabase } from '@/lib/supabase'
@@ -13,6 +13,7 @@ interface Tag {
   id: string
   name: string
   color?: string
+  tag_type?: 'model_name' | 'model_style'
 }
 
 interface FormData {
@@ -52,6 +53,7 @@ export default function CreatePage() {
   const [imagePreviews, setImagePreviews] = useState<string[]>([])
   const [availableTags, setAvailableTags] = useState<Tag[]>([])
   const [newTagName, setNewTagName] = useState('')
+  const [newTagType, setNewTagType] = useState<'model_name' | 'model_style'>('model_style')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
@@ -194,7 +196,8 @@ export default function CreatePage() {
         },
         body: JSON.stringify({
           name: newTagName.trim(),
-          category: 'style'
+          category: 'style',
+          tag_type: newTagType
         })
       })
       
@@ -496,60 +499,178 @@ export default function CreatePage() {
               
               {/* 已选标签 */}
               {formData.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {formData.tags.map(tag => (
-                    <span
-                      key={tag.id}
-                      className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800"
-                    >
-                      {tag.name}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveTag(tag.id)}
-                        className="ml-2 w-4 h-4 text-blue-600 hover:text-blue-800"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </span>
-                  ))}
+                <div className="mb-4">
+                  {/* 模型名字标签 */}
+                  {formData.tags.filter(tag => tag.tag_type === 'model_name').length > 0 && (
+                    <div className="mb-3">
+                      <div className="flex items-center text-xs text-blue-600 font-medium mb-2">
+                        <User className="w-3 h-3 mr-1" />
+                        模型名字
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {formData.tags
+                          .filter(tag => tag.tag_type === 'model_name')
+                          .map(tag => (
+                            <span
+                              key={tag.id}
+                              className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800"
+                            >
+                              <User className="w-3 h-3 mr-1" />
+                              {tag.name}
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveTag(tag.id)}
+                                className="ml-2 w-4 h-4 text-blue-600 hover:text-blue-800"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </span>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 模型风格标签 */}
+                  {formData.tags.filter(tag => tag.tag_type === 'model_style' || !tag.tag_type).length > 0 && (
+                    <div className="mb-3">
+                      <div className="flex items-center text-xs text-purple-600 font-medium mb-2">
+                        <Palette className="w-3 h-3 mr-1" />
+                        模型风格
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {formData.tags
+                          .filter(tag => tag.tag_type === 'model_style' || !tag.tag_type)
+                          .map(tag => (
+                            <span
+                              key={tag.id}
+                              className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-purple-100 text-purple-800"
+                            >
+                              <Palette className="w-3 h-3 mr-1" />
+                              {tag.name}
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveTag(tag.id)}
+                                className="ml-2 w-4 h-4 text-purple-600 hover:text-purple-800"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </span>
+                          ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
               
               {/* 可选标签 */}
-              <div className="flex flex-wrap gap-2 mb-3">
-                {availableTags
-                  .filter(tag => !formData.tags.find(t => t.id === tag.id))
-                  .slice(0, 10)
-                  .map(tag => (
-                    <button
-                      key={tag.id}
-                      type="button"
-                      onClick={() => handleAddTag(tag)}
-                      className="px-3 py-1 text-sm border border-gray-300 rounded-full hover:bg-gray-50 transition-colors"
-                    >
-                      {tag.name}
-                    </button>
-                  ))}
+              <div className="mb-4">
+                <h4 className="text-sm font-medium text-gray-700 mb-2">选择标签</h4>
+                
+                {/* 模型名字标签 */}
+                {availableTags.filter(tag => tag.tag_type === 'model_name').length > 0 && (
+                  <div className="mb-3">
+                    <div className="flex items-center text-xs text-blue-600 font-medium mb-2">
+                      <User className="w-3 h-3 mr-1" />
+                      模型名字
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {availableTags
+                        .filter(tag => tag.tag_type === 'model_name' && !formData.tags.find(t => t.id === tag.id))
+                        .slice(0, 8)
+                        .map(tag => (
+                          <button
+                            key={tag.id}
+                            type="button"
+                            onClick={() => handleAddTag(tag)}
+                            className="inline-flex items-center px-3 py-1 text-sm border border-blue-300 rounded-full hover:bg-blue-50 transition-colors text-blue-700"
+                          >
+                            <User className="w-3 h-3 mr-1" />
+                            {tag.name}
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 模型风格标签 */}
+                {availableTags.filter(tag => tag.tag_type === 'model_style' || !tag.tag_type).length > 0 && (
+                  <div className="mb-3">
+                    <div className="flex items-center text-xs text-purple-600 font-medium mb-2">
+                      <Palette className="w-3 h-3 mr-1" />
+                      模型风格
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {availableTags
+                        .filter(tag => (tag.tag_type === 'model_style' || !tag.tag_type) && !formData.tags.find(t => t.id === tag.id))
+                        .slice(0, 8)
+                        .map(tag => (
+                          <button
+                            key={tag.id}
+                            type="button"
+                            onClick={() => handleAddTag(tag)}
+                            className="inline-flex items-center px-3 py-1 text-sm border border-purple-300 rounded-full hover:bg-purple-50 transition-colors text-purple-700"
+                          >
+                            <Palette className="w-3 h-3 mr-1" />
+                            {tag.name}
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+                )}
               </div>
               
               {/* 新建标签 */}
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={newTagName}
-                  onChange={(e) => setNewTagName(e.target.value)}
-                  placeholder="创建新标签"
-                  className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  maxLength={20}
-                />
-                <Button
-                  type="button"
-                  onClick={handleCreateNewTag}
-                  disabled={!newTagName.trim()}
-                  className="px-4 py-2 text-sm"
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
+              <div className="border-t pt-4">
+                <h4 className="text-sm font-medium text-gray-700 mb-3">创建新标签</h4>
+                
+                {/* 标签类型选择 */}
+                <div className="flex mb-3 bg-gray-100 rounded-lg p-1">
+                  <button
+                    type="button"
+                    onClick={() => setNewTagType('model_name')}
+                    className={cn(
+                      'flex-1 flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                      newTagType === 'model_name'
+                        ? 'bg-white text-blue-700 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
+                    )}
+                  >
+                    <User className="w-4 h-4 mr-1" />
+                    模型名字
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setNewTagType('model_style')}
+                    className={cn(
+                      'flex-1 flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                      newTagType === 'model_style'
+                        ? 'bg-white text-purple-700 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
+                    )}
+                  >
+                    <Palette className="w-4 h-4 mr-1" />
+                    模型风格
+                  </button>
+                </div>
+
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newTagName}
+                    onChange={(e) => setNewTagName(e.target.value)}
+                    placeholder={`创建新的${newTagType === 'model_name' ? '模型名字' : '模型风格'}标签`}
+                    className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    maxLength={20}
+                  />
+                  <Button
+                    type="button"
+                    onClick={handleCreateNewTag}
+                    disabled={!newTagName.trim()}
+                    className="px-4 py-2 text-sm"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </div>
             
