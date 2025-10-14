@@ -294,6 +294,7 @@ export default function HomeFeed() {
                     stats={model.stats}
                     created_at={model.created_at}
                     height={model.height}
+                    is_public={model.is_public}
                     onOpenDetail={(id) => setSelectedId(id)}
                   />
                 )}
@@ -324,6 +325,7 @@ export default function HomeFeed() {
                     stats={model.stats}
                     created_at={model.created_at}
                     height={model.height}
+                    is_public={model.is_public}
                     className="w-full"
                     onOpenDetail={(id) => setSelectedId(id)}
                   />

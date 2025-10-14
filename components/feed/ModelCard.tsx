@@ -28,6 +28,7 @@ interface ModelCardProps {
   json_data?: object
   height?: number
   className?: string
+  is_public?: boolean
   onLike?: (id: string) => void
   onComment?: (id: string) => void
   onCopy?: (id: string, data: object) => void
@@ -49,6 +50,7 @@ export default function ModelCard({
   json_data,
   height,
   className = '',
+  is_public = true,
   onLike,
   onComment,
   onCopy,
@@ -251,9 +253,17 @@ export default function ModelCard({
       <div className="p-4">
         {/* 标题和描述 */}
         <div className="mb-3">
-          <h3 className="font-semibold text-gray-900 line-clamp-2 mb-1 group-hover:text-primary-600 transition-colors">
-            {title}
-          </h3>
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="font-semibold text-gray-900 line-clamp-2 group-hover:text-primary-600 transition-colors flex-1">
+              {title}
+            </h3>
+            {/* 私人标签 */}
+            {!is_public && (
+              <span className="inline-flex items-center px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-md font-medium">
+                私人
+              </span>
+            )}
+          </div>
           <p className="text-sm text-gray-600 line-clamp-2">
             {description}
           </p>

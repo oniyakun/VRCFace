@@ -147,8 +147,26 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
       // 调试信息
       console.log('UserProfile - Fetching user profile for userId:', userId)
       
+      // 获取当前用户的session token
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      // 构建请求头
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json'
+      }
+      
+      // 如果有session，添加Authorization头
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`
+        console.log('UserProfile - Adding auth token to request')
+      } else {
+        console.log('UserProfile - No auth token available')
+      }
+      
       // 获取用户基本信息
-      const response = await fetch(`/api/users/${userId}`)
+      const response = await fetch(`/api/users/${userId}`, {
+        headers
+      })
       const result = await response.json()
 
       console.log('UserProfile - API response:', result)
@@ -409,7 +427,15 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
                         )}
                       </div>
                       <div onClick={() => setSelectedModelId(model.id)} className="cursor-pointer">
-                        <h3 className="font-medium text-gray-900 mb-1">{model.title}</h3>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-medium text-gray-900 flex-1">{model.title}</h3>
+                          {/* 私人标签 */}
+                          {!model.is_public && (
+                            <span className="inline-flex items-center px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-md font-medium">
+                              私人
+                            </span>
+                          )}
+                        </div>
                         <p className="text-sm text-gray-600 mb-2">{model.description}</p>
                         <div className="flex justify-between text-xs text-gray-500">
                           <span>{model.stats?.views || 0} 浏览</span>

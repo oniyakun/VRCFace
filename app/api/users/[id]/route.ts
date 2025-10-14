@@ -69,8 +69,38 @@ export async function GET(
       .eq('user_id', userId)
       .single()
 
+    // 检查当前用户是否关注了该用户（如果有认证信息）
+    let isFollowing = false
+    let isOwnProfile = false
+    const authorization = request.headers.get('authorization')
+    
+    if (authorization && authorization.startsWith('Bearer ')) {
+      const token = authorization.replace('Bearer ', '')
+      
+      try {
+        const { data: { user: currentUser } } = await supabaseAdmin.auth.getUser(token)
+        
+        if (currentUser) {
+          isOwnProfile = currentUser.id === userId
+          
+          if (currentUser.id !== userId) {
+            const { data: followData } = await supabaseAdmin
+              .from('follows')
+              .select('id')
+              .eq('follower_id', currentUser.id)
+              .eq('following_id', userId)
+              .single()
+            
+            isFollowing = !!followData
+          }
+        }
+      } catch (error) {
+        // 忽略认证错误，继续返回用户信息
+      }
+    }
+
     // 获取用户的模型作品
-    const { data: modelsData, error: modelsError } = await supabaseAdmin
+    let modelsQuery = supabaseAdmin
       .from('face_models')
       .select(`
         id,
@@ -92,34 +122,15 @@ export async function GET(
         )
       `)
       .eq('author_id', userId)
-      .eq('is_public', true)
+
+    // 如果不是自己的主页，只显示公开的模型
+    if (!isOwnProfile) {
+      modelsQuery = modelsQuery.eq('is_public', true)
+    }
+
+    const { data: modelsData, error: modelsError } = await modelsQuery
       .order('created_at', { ascending: false })
       .limit(12)
-
-    // 检查当前用户是否关注了该用户（如果有认证信息）
-    let isFollowing = false
-    const authorization = request.headers.get('authorization')
-    
-    if (authorization && authorization.startsWith('Bearer ')) {
-      const token = authorization.replace('Bearer ', '')
-      
-      try {
-        const { data: { user: currentUser } } = await supabaseAdmin.auth.getUser(token)
-        
-        if (currentUser && currentUser.id !== userId) {
-          const { data: followData } = await supabaseAdmin
-            .from('follows')
-            .select('id')
-            .eq('follower_id', currentUser.id)
-            .eq('following_id', userId)
-            .single()
-          
-          isFollowing = !!followData
-        }
-      } catch (error) {
-        // 忽略认证错误，继续返回用户信息
-      }
-    }
 
     const user = {
       id: userData.id,
