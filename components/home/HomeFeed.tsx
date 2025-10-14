@@ -207,7 +207,7 @@ export default function HomeFeed() {
             探索精彩模型
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            发现社区创作者们分享的优质 VRChat 面部表情模型，找到最适合你的风格
+            发现社区创作者们分享的捏脸数据，通过标签筛选找到最适合你的风格
           </p>
         </div>
 
