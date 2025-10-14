@@ -16,6 +16,7 @@ interface ModelCardProps {
     avatar?: string
   }
   thumbnail?: string
+  preview_images?: string[]
   tags: { id: string; name: string }[]
   stats?: {
     likes: number
@@ -41,6 +42,7 @@ export default function ModelCard({
   description,
   author,
   thumbnail,
+  preview_images,
   tags,
   stats,
   created_at,
@@ -58,7 +60,11 @@ export default function ModelCard({
   const [isFavorited, setIsFavorited] = useState(false)
   const [imageLoaded, setImageLoaded] = useState(false)
   const [imageError, setImageError] = useState(false)
+  const [imageLoading, setImageLoading] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
+  
+  // 获取封面图片：优先使用preview_images的第一张，否则使用thumbnail
+  const coverImage = preview_images && preview_images.length > 0 ? preview_images[0] : thumbnail
   const { user } = useAuth()
   const router = useRouter()
 
@@ -175,19 +181,25 @@ export default function ModelCard({
     >
       {/* 缩略图 */}
       <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
-        {thumbnail && !imageError ? (
+        {coverImage && !imageError ? (
           <>
             <img
-              src={thumbnail}
+              src={coverImage}
               alt={title}
               className={cn(
                 'w-full h-full object-cover transition-all duration-300 group-hover:scale-105',
                 imageLoaded ? 'opacity-100' : 'opacity-0'
               )}
-              onLoad={() => setImageLoaded(true)}
-              onError={() => setImageError(true)}
+              onLoad={() => {
+                setImageLoaded(true)
+                setImageLoading(false)
+              }}
+              onError={() => {
+                setImageError(true)
+                setImageLoading(false)
+              }}
             />
-            {!imageLoaded && (
+            {imageLoading && (
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="w-8 h-8 border-2 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
               </div>

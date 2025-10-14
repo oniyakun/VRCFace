@@ -16,9 +16,12 @@ interface HomeModel {
   author: {
     id: string
     username: string
+    display_name?: string
     role: string
+    avatar?: string
   } | null
   category: string
+  thumbnail?: string
   json_data: object
   is_public: boolean
   is_verified: boolean
@@ -37,6 +40,7 @@ interface HomeModel {
     }
   }>
   height?: number
+  preview_images?: string[]
 }
 
 interface HomeTag {
@@ -262,10 +266,11 @@ export default function HomeFeed() {
                     title={model.title}
                     description={model.description}
                     author={{
-                      name: model.author?.username || '未知作者',
-                      avatar: undefined
+                      name: model.author?.display_name || model.author?.username || '未知作者',
+                      avatar: model.author?.avatar
                     }}
-                    json_data={model.json_data}
+                    thumbnail={model.thumbnail}
+                    preview_images={model.preview_images}
                     tags={model.tags?.map((tagRelation: { tag: { id: string; name: string; category: string } }) => ({
                       id: tagRelation.tag.id,
                       name: tagRelation.tag.name
@@ -289,9 +294,11 @@ export default function HomeFeed() {
                     title={model.title}
                     description={model.description}
                     author={{
-                      name: model.author?.username || '未知作者',
-                      avatar: undefined
+                      name: model.author?.display_name || model.author?.username || '未知作者',
+                      avatar: model.author?.avatar
                     }}
+                    thumbnail={model.thumbnail}
+                    preview_images={model.preview_images}
                     json_data={model.json_data}
                     tags={model.tags?.map(tagRelation => ({
                       id: tagRelation.tag.id,

@@ -22,7 +22,7 @@ export async function getFaceModels(page = 1, limit = 12, filters?: {
       .from('face_models')
       .select(`
         *,
-        author:users!face_models_author_id_fkey(id, username, role),
+        author:users!face_models_author_id_fkey(id, username, display_name, role, avatar),
         stats:model_stats(views, downloads, likes, comments),
         tags:model_tags(tag:tags(id, name, category))
       `)
@@ -90,12 +90,12 @@ export async function getFaceModelById(id: string) {
       .from('face_models')
       .select(`
         *,
-        author:users!face_models_author_id_fkey(id, username, role),
+        author:users!face_models_author_id_fkey(id, username, display_name, role, avatar),
         stats:model_stats(views, downloads, likes, comments),
         tags:model_tags(tag:tags(id, name, category)),
         comments:comments(
           id, content, created_at,
-          author:users!comments_author_id_fkey(id, username)
+          author:users!comments_author_id_fkey(id, username, display_name, avatar)
         )
       `)
       .eq('id', id)
