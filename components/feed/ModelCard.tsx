@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Heart, MessageCircle, Copy, Download, Eye, Calendar, User } from 'lucide-react'
 import { cn, formatRelativeTime } from '@/lib/utils'
 import Button from '@/components/ui/Button'
@@ -29,6 +30,7 @@ interface ModelCardProps {
   onComment?: (id: string) => void
   onCopy?: (id: string, data: object) => void
   onDownload?: (id: string) => void
+  onOpenDetail?: (id: string) => void
 }
 
 export default function ModelCard({
@@ -47,10 +49,12 @@ export default function ModelCard({
   onComment,
   onCopy,
   onDownload
+  , onOpenDetail
 }: ModelCardProps) {
   const [isLiked, setIsLiked] = useState(false)
   const [imageLoaded, setImageLoaded] = useState(false)
   const [imageError, setImageError] = useState(false)
+  const router = useRouter()
 
   const handleLike = () => {
     setIsLiked(!isLiked)
@@ -67,10 +71,17 @@ export default function ModelCard({
   return (
     <div 
       className={cn(
-        'bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300 group',
+        'bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300 group cursor-pointer',
         className
       )}
       style={height && isFinite(height) && height > 0 ? { height: `${height}px` } : undefined}
+      onClick={() => {
+        if (onOpenDetail) {
+          onOpenDetail(id)
+        } else {
+          router.push(`/feed/${id}`)
+        }
+      }}
     >
       {/* 缩略图 */}
       <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
@@ -109,7 +120,7 @@ export default function ModelCard({
             <Button
               size="sm"
               variant="secondary"
-              onClick={handleCopy}
+              onClick={(e) => { e.stopPropagation(); handleCopy() }}
               className="bg-white/90 backdrop-blur-sm hover:bg-white"
             >
               <Copy className="w-4 h-4" />
@@ -117,7 +128,7 @@ export default function ModelCard({
             <Button
               size="sm"
               variant="secondary"
-              onClick={() => onDownload?.(id)}
+              onClick={(e) => { e.stopPropagation(); onDownload?.(id) }}
               className="bg-white/90 backdrop-blur-sm hover:bg-white"
             >
               <Download className="w-4 h-4" />
@@ -194,14 +205,14 @@ export default function ModelCard({
           
           <div className="flex items-center space-x-2">
             <button
-              onClick={() => onComment?.(id)}
+              onClick={(e) => { e.stopPropagation(); onComment?.(id) }}
               className="flex items-center space-x-1 text-gray-600 hover:text-primary-600 transition-colors"
             >
               <MessageCircle className="w-4 h-4" />
               <span className="text-sm">{stats?.comments || 0}</span>
             </button>
             <button
-              onClick={handleLike}
+              onClick={(e) => { e.stopPropagation(); handleLike() }}
               className={cn(
                 'flex items-center space-x-1 transition-colors',
                 isLiked ? 'text-red-500' : 'text-gray-600 hover:text-red-500'

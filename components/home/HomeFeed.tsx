@@ -5,6 +5,7 @@ import TagFilter from '@/components/feed/TagFilter'
 import FeedControls, { SortOption, ViewMode } from '@/components/feed/FeedControls'
 import WaterfallLayout from '@/components/feed/WaterfallLayout'
 import ModelCard from '@/components/feed/ModelCard'
+import ModelDetailOverlay from '@/components/feed/ModelDetailOverlay'
 import { getFaceModels, getTags } from '@/lib/supabase'
 
 // 真实数据接口定义
@@ -57,6 +58,7 @@ export default function HomeFeed() {
   const [searchTerm, setSearchTerm] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isClient, setIsClient] = useState(false)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
 
   // 确保客户端挂载后再计算动态标签统计
   useEffect(() => {
@@ -271,6 +273,7 @@ export default function HomeFeed() {
                     stats={model.stats}
                     created_at={model.created_at}
                     height={model.height}
+                    onOpenDetail={(id) => setSelectedId(id)}
                   />
                 )}
                 onLoadMore={() => {}}
@@ -298,9 +301,13 @@ export default function HomeFeed() {
                     created_at={model.created_at}
                     height={model.height}
                     className="w-full"
+                    onOpenDetail={(id) => setSelectedId(id)}
                   />
                 ))}
               </div>
+            )}
+            {selectedId && (
+              <ModelDetailOverlay id={selectedId} onClose={() => setSelectedId(null)} />
             )}
           </div>
         </div>

@@ -6,6 +6,7 @@ import TagFilter from './TagFilter'
 import FeedControls, { SortOption, ViewMode } from './FeedControls'
 import WaterfallLayout from './WaterfallLayout'
 import ModelCard from './ModelCard'
+import ModelDetailOverlay from './ModelDetailOverlay'
 import { cn } from '@/lib/utils'
 import { getFaceModels, getTags } from '@/lib/supabase'
 
@@ -75,6 +76,7 @@ export default function FeedPage({ className = '' }: FeedPageProps) {
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [sortBy, setSortBy] = useState<SortOption>('latest')
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
+  const [selectedId, setSelectedId] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(false)
   const [initialLoading, setInitialLoading] = useState(true)
@@ -323,6 +325,7 @@ export default function FeedPage({ className = '' }: FeedPageProps) {
                     onComment={handleComment}
                     onCopy={handleCopy}
                     onDownload={handleDownload}
+                    onOpenDetail={(id) => setSelectedId(id)}
                   />
                 )}
                 onLoadMore={handleLoadMore}
@@ -356,6 +359,7 @@ export default function FeedPage({ className = '' }: FeedPageProps) {
                     onCopy={handleCopy}
                     onDownload={handleDownload}
                     className="w-full"
+                    onOpenDetail={(id) => setSelectedId(id)}
                   />
                 ))}
                 {loading && (
@@ -383,6 +387,9 @@ export default function FeedPage({ className = '' }: FeedPageProps) {
           </div>
         </div>
       </div>
+      {selectedId && (
+        <ModelDetailOverlay id={selectedId} onClose={() => setSelectedId(null)} />
+      )}
     </div>
   )
 }
