@@ -177,7 +177,7 @@ export async function POST(request: NextRequest) {
         thumbnail: thumbnailUrls[0], // 第一张图片的缩略图作为主缩略图
         images: imageUrls, // 存储所有图片URL
         json_data: JSON.parse(jsonData),
-        category,
+        category: category || 'other',
         is_public: isPublic
       })
       .select()

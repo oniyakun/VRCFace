@@ -77,9 +77,19 @@ export async function GET(
         title,
         description,
         thumbnail,
+        images,
+        json_data,
         category,
+        is_public,
         created_at,
-        stats:model_stats(views, downloads, likes, comments)
+        stats:model_stats(views, downloads, likes, comments),
+        tags:model_tags(
+          tag:tags(
+            id,
+            name,
+            tag_type
+          )
+        )
       `)
       .eq('author_id', userId)
       .eq('is_public', true)

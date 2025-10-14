@@ -3,8 +3,11 @@
 import { useState, useEffect } from 'react'
 import { User } from '@/types'
 import { Button } from '@/components/ui/Button'
-import { Star, Heart, MessageCircle, Eye, Download } from 'lucide-react'
+import { Star, Heart, MessageCircle, Eye, Download, Edit, Trash2, MoreVertical } from 'lucide-react'
 import ModelDetailOverlay from '@/components/feed/ModelDetailOverlay'
+import EditModelModal from './EditModelModal'
+import DeleteConfirmModal from './DeleteConfirmModal'
+import { supabase } from '@/lib/supabase'
 
 interface UserProfileProps {
   userId: string
@@ -25,10 +28,78 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
   const [favoritesPage, setFavoritesPage] = useState(1)
   const [favoritesLoading, setFavoritesLoading] = useState(false)
   const [selectedModelId, setSelectedModelId] = useState<string | null>(null)
+  const [editingModel, setEditingModel] = useState<any | null>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null)
+  const [actionMenuOpen, setActionMenuOpen] = useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
     fetchUserProfile()
   }, [userId])
+
+  // 处理编辑模型
+  const handleEditModel = (updatedModel: any) => {
+    if (user) {
+      const updatedModels = user.models.map(model => 
+        model.id === updatedModel.id ? { ...model, ...updatedModel } : model
+      )
+      setUser({ ...user, models: updatedModels })
+    }
+    setEditingModel(null)
+  }
+
+  // 处理删除模型
+  const handleDeleteModel = async () => {
+    if (!showDeleteConfirm) return
+
+    setIsDeleting(true)
+    try {
+      // 使用Supabase的session获取token
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session?.access_token) {
+        throw new Error('请先登录')
+      }
+
+      const response = await fetch(`/api/models/${showDeleteConfirm}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.message || '删除失败')
+      }
+
+      // 从列表中移除已删除的模型
+      if (user) {
+        const updatedModels = user.models.filter(model => model.id !== showDeleteConfirm)
+        setUser({ ...user, models: updatedModels })
+      }
+
+      setShowDeleteConfirm(null)
+    } catch (error) {
+      console.error('删除模型失败:', error)
+      alert(error instanceof Error ? error.message : '删除失败')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  // 点击外部关闭菜单
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setActionMenuOpen(null)
+    }
+
+    if (actionMenuOpen) {
+      document.addEventListener('click', handleClickOutside)
+      return () => document.removeEventListener('click', handleClickOutside)
+    }
+  }, [actionMenuOpen])
 
   useEffect(() => {
     if (activeTab === 'favorites' && user && (!user.favorites || favoritesPage > 1)) {
@@ -277,10 +348,56 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
                   {user.models.map((model) => (
                     <div 
                       key={model.id} 
-                      className="bg-gray-50 rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer"
-                      onClick={() => setSelectedModelId(model.id)}
+                      className="bg-gray-50 rounded-lg p-4 hover:shadow-lg transition-shadow relative group"
                     >
-                      <div className="aspect-video bg-gray-200 rounded-lg mb-3 flex items-center justify-center">
+                      {/* 操作按钮 - 仅在自己的主页显示 */}
+                      {isOwnProfile && (
+                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="relative">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setActionMenuOpen(actionMenuOpen === model.id ? null : model.id)
+                              }}
+                              className="p-1 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors"
+                            >
+                              <MoreVertical className="w-4 h-4 text-gray-600" />
+                            </button>
+                            
+                            {actionMenuOpen === model.id && (
+                              <div className="absolute right-0 top-8 bg-white rounded-lg shadow-lg border py-1 z-10 min-w-[120px]">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setEditingModel(model)
+                                    setActionMenuOpen(null)
+                                  }}
+                                  className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                  编辑
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setShowDeleteConfirm(model.id)
+                                    setActionMenuOpen(null)
+                                  }}
+                                  className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                  删除
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      <div 
+                        className="aspect-video bg-gray-200 rounded-lg mb-3 flex items-center justify-center cursor-pointer"
+                        onClick={() => setSelectedModelId(model.id)}
+                      >
                         {model.thumbnail ? (
                           <img 
                             src={model.thumbnail} 
@@ -291,11 +408,13 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
                           <div className="text-gray-400">暂无预览</div>
                         )}
                       </div>
-                      <h3 className="font-medium text-gray-900 mb-1">{model.title}</h3>
-                      <p className="text-sm text-gray-600 mb-2">{model.description}</p>
-                      <div className="flex justify-between text-xs text-gray-500">
-                        <span>{model.stats?.views || 0} 浏览</span>
-                        <span>{model.stats?.likes || 0} 点赞</span>
+                      <div onClick={() => setSelectedModelId(model.id)} className="cursor-pointer">
+                        <h3 className="font-medium text-gray-900 mb-1">{model.title}</h3>
+                        <p className="text-sm text-gray-600 mb-2">{model.description}</p>
+                        <div className="flex justify-between text-xs text-gray-500">
+                          <span>{model.stats?.views || 0} 浏览</span>
+                          <span>{model.stats?.likes || 0} 点赞</span>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -453,6 +572,27 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
         <ModelDetailOverlay
           id={selectedModelId}
           onClose={() => setSelectedModelId(null)}
+        />
+      )}
+
+      {/* 编辑模型弹窗 */}
+      {editingModel && (
+        <EditModelModal
+          model={editingModel}
+          isOpen={!!editingModel}
+          onClose={() => setEditingModel(null)}
+          onSave={handleEditModel}
+        />
+      )}
+
+      {/* 删除确认弹窗 */}
+      {showDeleteConfirm && (
+        <DeleteConfirmModal
+          isOpen={!!showDeleteConfirm}
+          modelTitle={user?.models.find(m => m.id === showDeleteConfirm)?.title || ''}
+          onClose={() => setShowDeleteConfirm(null)}
+          onConfirm={handleDeleteModel}
+          isDeleting={isDeleting}
         />
       )}
     </div>

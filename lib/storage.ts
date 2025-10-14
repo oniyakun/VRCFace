@@ -254,3 +254,46 @@ export async function listUserImages(userId: string): Promise<{
     }
   }
 }
+
+/**
+ * 从Supabase存储URL中提取文件路径
+ * @param url 完整的Supabase存储URL或JSON格式的URL
+ * @returns 文件路径
+ */
+export function extractPathFromUrl(url: string): string | null {
+  try {
+    let actualUrl = url
+    
+    // 检查是否是JSON格式的URL
+    if (url.startsWith('{"success":true,"url":"')) {
+      try {
+        const parsed = JSON.parse(url)
+        if (parsed.success && parsed.url) {
+          actualUrl = parsed.url
+        } else {
+          console.error('JSON格式URL解析失败:', url)
+          return null
+        }
+      } catch (parseError) {
+        console.error('解析JSON格式URL失败:', parseError)
+        return null
+      }
+    }
+    
+    // Supabase存储URL格式: https://project.supabase.co/storage/v1/object/public/bucket-name/path
+    const urlObj = new URL(actualUrl)
+    const pathParts = urlObj.pathname.split('/')
+    
+    // 找到 'public' 后面的部分，跳过 bucket 名称
+    const publicIndex = pathParts.indexOf('public')
+    if (publicIndex !== -1 && pathParts.length > publicIndex + 2) {
+      // 跳过 'public' 和 bucket 名称，返回实际的文件路径
+      return pathParts.slice(publicIndex + 2).join('/')
+    }
+    
+    return null
+  } catch (error) {
+    console.error('提取路径失败:', error)
+    return null
+  }
+}
