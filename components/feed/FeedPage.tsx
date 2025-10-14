@@ -213,6 +213,8 @@ export default function FeedPage({ className = '' }: FeedPageProps) {
   // 模型操作
   const handleLike = (id: string) => {
     console.log('点赞模型:', id)
+    // 刷新模型数据以获取最新的点赞数
+    loadInitialData()
   }
 
   const handleComment = (id: string) => {
@@ -226,6 +228,12 @@ export default function FeedPage({ className = '' }: FeedPageProps) {
 
   const handleDownload = (id: string) => {
     console.log('下载模型:', id)
+  }
+
+  const handleFavorite = (id: string) => {
+    console.log('收藏模型:', id)
+    // 刷新模型数据以获取最新的收藏状态
+    loadInitialData()
   }
 
   // 初始加载状态
@@ -325,6 +333,7 @@ export default function FeedPage({ className = '' }: FeedPageProps) {
                     onComment={handleComment}
                     onCopy={handleCopy}
                     onDownload={handleDownload}
+                    onFavorite={handleFavorite}
                     onOpenDetail={(id) => setSelectedId(id)}
                   />
                 )}
@@ -358,6 +367,7 @@ export default function FeedPage({ className = '' }: FeedPageProps) {
                     onComment={handleComment}
                     onCopy={handleCopy}
                     onDownload={handleDownload}
+                    onFavorite={handleFavorite}
                     className="w-full"
                     onOpenDetail={(id) => setSelectedId(id)}
                   />

@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Heart, MessageCircle, Copy, Download, Eye, Calendar, User } from 'lucide-react'
+import { Heart, MessageCircle, Copy, Download, Eye, Calendar, User, Star } from 'lucide-react'
 import { cn, formatRelativeTime } from '@/lib/utils'
 import Button from '@/components/ui/Button'
+import { useAuth } from '@/components/auth/AuthProvider'
 
 interface ModelCardProps {
   id: string
@@ -31,6 +32,7 @@ interface ModelCardProps {
   onCopy?: (id: string, data: object) => void
   onDownload?: (id: string) => void
   onOpenDetail?: (id: string) => void
+  onFavorite?: (id: string) => void
 }
 
 export default function ModelCard({
@@ -48,17 +50,107 @@ export default function ModelCard({
   onLike,
   onComment,
   onCopy,
-  onDownload
-  , onOpenDetail
+  onDownload,
+  onOpenDetail,
+  onFavorite
 }: ModelCardProps) {
   const [isLiked, setIsLiked] = useState(false)
+  const [isFavorited, setIsFavorited] = useState(false)
   const [imageLoaded, setImageLoaded] = useState(false)
   const [imageError, setImageError] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const { user } = useAuth()
   const router = useRouter()
 
-  const handleLike = () => {
-    setIsLiked(!isLiked)
-    onLike?.(id)
+  // 检查用户的点赞和收藏状态
+  useEffect(() => {
+    if (user) {
+      checkUserStatus()
+    }
+  }, [user, id])
+
+  const checkUserStatus = async () => {
+    if (!user) return
+
+    try {
+      // 检查点赞状态
+      const likeResponse = await fetch(`/api/likes?model_id=${id}&user_id=${user.id}`)
+      if (likeResponse.ok) {
+        const likeData = await likeResponse.json()
+        setIsLiked(likeData.isLiked)
+      }
+
+      // 检查收藏状态
+      const favoriteResponse = await fetch(`/api/favorites?model_id=${id}&user_id=${user.id}`)
+      if (favoriteResponse.ok) {
+        const favoriteData = await favoriteResponse.json()
+        setIsFavorited(favoriteData.isFavorited)
+      }
+    } catch (error) {
+      console.error('检查用户状态失败:', error)
+    }
+  }
+
+  const handleLike = async () => {
+    if (!user) {
+      router.push('/auth')
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      const response = await fetch('/api/likes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model_id: id,
+          user_id: user.id
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setIsLiked(data.action === 'liked')
+        onLike?.(id)
+      }
+    } catch (error) {
+      console.error('点赞操作失败:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleFavorite = async () => {
+    if (!user) {
+      router.push('/auth')
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      const response = await fetch('/api/favorites', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model_id: id,
+          user_id: user.id
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setIsFavorited(data.action === 'favorited')
+        onFavorite?.(id)
+      }
+    } catch (error) {
+      console.error('收藏操作失败:', error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleCopy = () => {
@@ -112,24 +204,32 @@ export default function ModelCard({
           </div>
         )}
         
-        {/* 悬浮操作按钮 */}
+        {/* 悬浮操作按钮 - 替换为收藏和点赞 */}
         <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <div className="flex space-x-2">
             <Button
               size="sm"
               variant="secondary"
-              onClick={(e) => { e.stopPropagation(); handleCopy() }}
-              className="bg-white/90 backdrop-blur-sm hover:bg-white"
+              onClick={(e) => { e.stopPropagation(); handleFavorite() }}
+              disabled={isLoading}
+              className={cn(
+                'bg-white/90 backdrop-blur-sm hover:bg-white transition-colors',
+                isFavorited ? 'text-yellow-500' : 'text-gray-600'
+              )}
             >
-              <Copy className="w-4 h-4" />
+              <Star className={cn('w-4 h-4', isFavorited && 'fill-current')} />
             </Button>
             <Button
               size="sm"
               variant="secondary"
-              onClick={(e) => { e.stopPropagation(); onDownload?.(id) }}
-              className="bg-white/90 backdrop-blur-sm hover:bg-white"
+              onClick={(e) => { e.stopPropagation(); handleLike() }}
+              disabled={isLoading}
+              className={cn(
+                'bg-white/90 backdrop-blur-sm hover:bg-white transition-colors',
+                isLiked ? 'text-red-500' : 'text-gray-600'
+              )}
             >
-              <Download className="w-4 h-4" />
+              <Heart className={cn('w-4 h-4', isLiked && 'fill-current')} />
             </Button>
           </div>
         </div>
@@ -196,8 +296,8 @@ export default function ModelCard({
               {stats?.views || 0}
             </span>
             <span className="flex items-center">
-              <Download className="w-4 h-4 mr-1" />
-              {stats?.downloads || 0}
+              <Star className="w-4 h-4 mr-1" />
+              收藏
             </span>
           </div>
           
@@ -211,6 +311,7 @@ export default function ModelCard({
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); handleLike() }}
+              disabled={isLoading}
               className={cn(
                 'flex items-center space-x-1 transition-colors',
                 isLiked ? 'text-red-500' : 'text-gray-600 hover:text-red-500'
