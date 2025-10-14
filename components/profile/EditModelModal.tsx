@@ -238,17 +238,15 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
       setError('请输入描述')
       return false
     }
-    if (!formData.jsonData.trim()) {
-      setError('请输入JSON数据')
-      return false
-    }
     
-    // 验证JSON格式
-    try {
-      JSON.parse(formData.jsonData)
-    } catch {
-      setError('JSON数据格式不正确')
-      return false
+    // 如果有捏脸数据，则验证JSON格式
+    if (formData.jsonData.trim()) {
+      try {
+        JSON.parse(formData.jsonData)
+      } catch {
+        setError('JSON数据格式不正确')
+        return false
+      }
     }
     
     return true
@@ -636,17 +634,17 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
           <div>
             <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
               <Code className="w-4 h-4 mr-2" />
-              VRChat捏脸数据 (JSON格式) *
+              VRChat捏脸数据 (JSON格式)
             </label>
             <textarea
               value={formData.jsonData}
               onChange={(e) => handleInputChange('jsonData', e.target.value)}
               rows={8}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
-              placeholder="粘贴你的VRChat捏脸JSON数据..."
+              placeholder="粘贴你的VRChat捏脸JSON数据（可选）..."
             />
             <p className="text-xs text-gray-500 mt-1">
-              请粘贴从VRChat导出的完整JSON数据
+              可选项：如果提供，其他用户可以复制您的捏脸数据
             </p>
           </div>
           

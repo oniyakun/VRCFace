@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     const imageCount = parseInt(formData.get('imageCount') as string || '0')
 
     // 验证必填字段
-    if (!title || !description || !jsonData || imageCount === 0) {
+    if (!title || !description || imageCount === 0) {
       return NextResponse.json<ApiResponse<null>>({
         success: false,
         message: '请填写所有必填字段'
@@ -66,14 +66,16 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // 验证JSON数据格式
-    try {
-      JSON.parse(jsonData)
-    } catch {
-      return NextResponse.json<ApiResponse<null>>({
-        success: false,
-        message: 'JSON数据格式不正确'
-      }, { status: 400 })
+    // 如果提供了JSON数据，验证格式
+    if (jsonData && jsonData.trim()) {
+      try {
+        JSON.parse(jsonData)
+      } catch {
+        return NextResponse.json<ApiResponse<null>>({
+          success: false,
+          message: 'JSON数据格式不正确'
+        }, { status: 400 })
+      }
     }
 
     // 解析标签
@@ -176,7 +178,7 @@ export async function POST(request: NextRequest) {
         author_id: user.id,
         thumbnail: thumbnailUrls[0], // 第一张图片的缩略图作为主缩略图
         images: imageUrls, // 存储所有图片URL
-        json_data: JSON.parse(jsonData),
+        json_data: jsonData && jsonData.trim() ? JSON.parse(jsonData) : null,
         category: category || 'other',
         is_public: isPublic
       })

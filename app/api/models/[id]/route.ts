@@ -133,11 +133,23 @@ export async function PUT(
     const deletedImagesJson = formData.get('deletedImages') as string
 
     // 验证必填字段
-    if (!title || !description || !jsonData) {
+    if (!title || !description) {
       return NextResponse.json<ApiResponse<null>>({
         success: false,
-        message: '标题、描述和JSON数据为必填项'
+        message: '标题和描述为必填项'
       }, { status: 400 })
+    }
+
+    // 如果提供了JSON数据，验证格式
+    if (jsonData && jsonData.trim()) {
+      try {
+        JSON.parse(jsonData)
+      } catch {
+        return NextResponse.json<ApiResponse<null>>({
+          success: false,
+          message: 'JSON数据格式不正确'
+        }, { status: 400 })
+      }
     }
 
     // 解析标签数据
@@ -269,7 +281,7 @@ export async function PUT(
       title,
       description,
       category: category || 'other',
-      json_data: JSON.parse(jsonData),
+      json_data: jsonData && jsonData.trim() ? JSON.parse(jsonData) : null,
       is_public: isPublic,
       updated_at: new Date().toISOString(),
       images: finalImageUrls,

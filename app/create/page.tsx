@@ -232,12 +232,8 @@ export default function CreatePage() {
       return false
     }
     
-    if (!formData.jsonData.trim()) {
-      setError('请输入捏脸数据')
-      return false
-    }
-    
-    if (!validateJsonData(formData.jsonData)) {
+    // 如果有捏脸数据，则验证JSON格式
+    if (formData.jsonData.trim() && !validateJsonData(formData.jsonData)) {
       setError('捏脸数据格式不正确，请输入有效的JSON格式')
       return false
     }
@@ -695,17 +691,17 @@ export default function CreatePage() {
             <div>
               <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
                 <Code className="w-4 h-4 mr-2" />
-                捏脸数据 (JSON格式) *
+                捏脸数据 (JSON格式)
               </label>
               <textarea
                 value={formData.jsonData}
                 onChange={(e) => handleInputChange('jsonData', e.target.value)}
-                placeholder="请粘贴VRChat的捏脸JSON数据..."
+                placeholder="请粘贴VRChat的捏脸JSON数据（可选）..."
                 rows={8}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm resize-none"
               />
               <p className="text-xs text-gray-500 mt-1">
-                请确保JSON格式正确，这将用于其他用户复制您的捏脸数据
+                可选项：如果提供，其他用户可以复制您的捏脸数据
               </p>
             </div>
             
