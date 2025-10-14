@@ -27,7 +27,7 @@ export default function DocsPage() {
             VRCFace 使用文档
           </h1>
           <p className="text-xl text-gray-600">
-            了解如何使用 VRCFace 平台分享和管理你的 VRChat 面部模型
+            了解如何使用 VRCFace 平台分享和管理你的 VRChat 捏脸数据，通过插件和标签筛选功能轻松找到心仪的模型
           </p>
         </div>
 
@@ -52,7 +52,7 @@ export default function DocsPage() {
               快速开始
             </h3>
             <p className="text-gray-600 mb-4">
-              5分钟快速上手，学会上传、分享和使用面部模型
+              5分钟快速上手，学会通过插件分享捏脸数据和使用标签筛选功能
             </p>
             <Button variant="outline" size="sm">
               开始教程

@@ -36,37 +36,37 @@ export default function HeroSection() {
             </span>
           </h1>
           <p className="text-xl sm:text-2xl text-gray-600 mb-2">
-            VRChat 面部模型分享平台
+            免费公开的 VRChat 捏脸数据分享平台
           </p>
         </div>
 
         {/* 描述文字 */}
         <div className="mb-12 animate-slide-up">
           <p className="text-lg sm:text-xl text-gray-700 mb-6 leading-relaxed max-w-2xl mx-auto">
-            发现、分享和下载精美的 VRChat 面部表情模型。
+            专为 VRChat 玩家打造的捏脸数据分享平台。
             <br />
-            让你的虚拟形象更加生动有趣！
+            下载我们的插件分享你的捏脸数据，通过标签筛选找到心仪的模型！
           </p>
           
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-2xl mx-auto text-sm text-gray-600">
             <div className="flex items-center justify-center space-x-2">
               <div className="w-2 h-2 bg-primary-500 rounded-full"></div>
-              <span>海量模型库</span>
+              <span>插件分享</span>
             </div>
             <div className="flex items-center justify-center space-x-2">
               <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-              <span>一键复制 JSON</span>
+              <span>标签筛选</span>
             </div>
             <div className="flex items-center justify-center space-x-2">
               <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
-              <span>社区互动</span>
+              <span>免费公开</span>
             </div>
           </div>
         </div>
 
         {/* 操作按钮 */}
         <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 mb-16 animate-slide-up">
-          <Link href="/docs">
+          <Link href="/docs" className="w-full sm:w-auto">
             <Button 
               size="lg" 
               className="w-full sm:w-auto min-w-[160px] shadow-lg hover:shadow-xl transform hover:-translate-y-1"
@@ -87,21 +87,6 @@ export default function HeroSection() {
           </Button>
         </div>
 
-        {/* 统计信息 */}
-        <div className="grid grid-cols-3 gap-8 max-w-md mx-auto text-center animate-fade-in">
-          <div>
-            <div className="text-2xl font-bold text-primary-600">1000+</div>
-            <div className="text-sm text-gray-600">模型数量</div>
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-purple-600">500+</div>
-            <div className="text-sm text-gray-600">活跃用户</div>
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-indigo-600">50+</div>
-            <div className="text-sm text-gray-600">每日新增</div>
-          </div>
-        </div>
       </div>
 
       {/* 滚动指示器 */}

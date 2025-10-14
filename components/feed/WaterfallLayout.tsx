@@ -103,11 +103,18 @@ export default function WaterfallLayout({
     if (!containerRef.current || columns === 0 || Object.keys(itemHeights).length === 0) return
 
     const containerWidth = containerRef.current.offsetWidth
-    const columnWidth = (containerWidth - gap * (columns - 1)) / columns
+    if (containerWidth <= 0) return
+
+    const columnWidth = Math.max(0, (containerWidth - gap * (columns - 1)) / columns)
     const newColumnHeights = new Array(columns).fill(0)
     const newItemPositions: { [key: string]: { x: number; y: number; column: number } } = {}
 
     items.forEach((item) => {
+      // 确保所有高度值都是有效的
+      if (!newColumnHeights.every(h => isFinite(h))) {
+        newColumnHeights.fill(0)
+      }
+      
       // 找到最短的列
       const shortestColumnIndex = newColumnHeights.indexOf(Math.min(...newColumnHeights))
       
@@ -115,15 +122,18 @@ export default function WaterfallLayout({
       const x = shortestColumnIndex * (columnWidth + gap)
       const y = newColumnHeights[shortestColumnIndex]
       
-      // 使用实际高度
-      const actualHeight = itemHeights[item.id] || 400 // 默认高度作为后备
+      // 使用实际高度，确保是有效数值
+      const actualHeight = Math.max(0, itemHeights[item.id] || 400) // 默认高度作为后备
       
       newItemPositions[item.id] = { x, y, column: shortestColumnIndex }
       newColumnHeights[shortestColumnIndex] += actualHeight + gap
     })
 
+    // 确保最终的列高度都是有效的
+    const validColumnHeights = newColumnHeights.map(h => isFinite(h) ? h : 0)
+
     setItemPositions(newItemPositions)
-    setColumnHeights(newColumnHeights)
+    setColumnHeights(validColumnHeights)
     setIsLayoutReady(true)
   }, [items, columns, gap, itemHeights])
 
@@ -182,16 +192,20 @@ export default function WaterfallLayout({
     return () => window.removeEventListener('scroll', handleScroll)
   }, [hasMore, loading, onLoadMore])
 
-  const containerHeight = columnHeights.length > 0 ? Math.max(...columnHeights) : 0
+  const containerHeight = columnHeights.length > 0 && columnHeights.every(h => isFinite(h)) 
+    ? Math.max(...columnHeights) 
+    : 0
   const containerWidth = containerRef.current?.offsetWidth || 0
-  const columnWidth = containerWidth > 0 ? (containerWidth - gap * (columns - 1)) / columns : 0
+  const columnWidth = containerWidth > 0 && columns > 0 
+    ? Math.max(0, (containerWidth - gap * (columns - 1)) / columns)
+    : 0
 
   return (
     <div className={cn('relative w-full', className)}>
       <div
         ref={containerRef}
         className="relative w-full"
-        style={{ height: containerHeight }}
+        style={{ height: isFinite(containerHeight) && containerHeight > 0 ? containerHeight : 'auto' }}
       >
         {items.map((item, index) => {
           const position = itemPositions[item.id]
@@ -213,7 +227,7 @@ export default function WaterfallLayout({
               style={{
                 left: position?.x || 0,
                 top: position?.y || 0,
-                width: columnWidth,
+                width: isFinite(columnWidth) && columnWidth > 0 ? columnWidth : 'auto',
                 transform: 'translateZ(0)', // 硬件加速
                 opacity: isLayoutReady ? 1 : 0,
               }}

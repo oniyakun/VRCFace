@@ -70,7 +70,7 @@ export default function ContentPreview() {
             热门模型展示
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            探索社区中最受欢迎的 VRChat 面部模型，找到适合你的完美表情
+            探索社区中最受欢迎的 VRChat 捏脸数据，通过标签筛选找到适合你的完美模型
           </p>
         </div>
 

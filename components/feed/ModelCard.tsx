@@ -14,15 +14,16 @@ interface ModelCardProps {
     avatar?: string
   }
   thumbnail?: string
-  tags: string[]
-  stats: {
+  tags: { id: string; name: string }[]
+  stats?: {
     likes: number
     comments: number
     downloads: number
     views: number
   }
-  createdAt: string
-  jsonData?: object
+  created_at: string
+  json_data?: object
+  height?: number
   className?: string
   onLike?: (id: string) => void
   onComment?: (id: string) => void
@@ -38,8 +39,9 @@ export default function ModelCard({
   thumbnail,
   tags,
   stats,
-  createdAt,
-  jsonData,
+  created_at,
+  json_data,
+  height,
   className = '',
   onLike,
   onComment,
@@ -56,17 +58,20 @@ export default function ModelCard({
   }
 
   const handleCopy = () => {
-    if (jsonData) {
-      navigator.clipboard.writeText(JSON.stringify(jsonData, null, 2))
-      onCopy?.(id, jsonData)
+    if (json_data) {
+      navigator.clipboard.writeText(JSON.stringify(json_data, null, 2))
+      onCopy?.(id, json_data)
     }
   }
 
   return (
-    <div className={cn(
-      'bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300 group',
-      className
-    )}>
+    <div 
+      className={cn(
+        'bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300 group',
+        className
+      )}
+      style={height && isFinite(height) && height > 0 ? { height: `${height}px` } : undefined}
+    >
       {/* 缩略图 */}
       <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
         {thumbnail && !imageError ? (
@@ -136,12 +141,12 @@ export default function ModelCard({
         {/* 标签 */}
         {tags && tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-3">
-            {tags.slice(0, 3).map((tag, index) => (
+            {tags.slice(0, 3).map((tag) => (
               <span
-                key={index}
+                key={tag.id}
                 className="inline-block px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md hover:bg-primary-100 hover:text-primary-700 transition-colors cursor-pointer"
               >
-                {tag}
+                {tag.name}
               </span>
             ))}
             {tags.length > 3 && (
@@ -170,7 +175,7 @@ export default function ModelCard({
           </div>
           <div className="flex items-center text-xs text-gray-500">
             <Calendar className="w-3 h-3 mr-1" />
-            {formatRelativeTime(createdAt)}
+            {formatRelativeTime(created_at)}
           </div>
         </div>
 
@@ -179,11 +184,11 @@ export default function ModelCard({
           <div className="flex items-center space-x-4 text-sm text-gray-600">
             <span className="flex items-center">
               <Eye className="w-4 h-4 mr-1" />
-              {stats.views}
+              {stats?.views || 0}
             </span>
             <span className="flex items-center">
               <Download className="w-4 h-4 mr-1" />
-              {stats.downloads}
+              {stats?.downloads || 0}
             </span>
           </div>
           
@@ -193,7 +198,7 @@ export default function ModelCard({
               className="flex items-center space-x-1 text-gray-600 hover:text-primary-600 transition-colors"
             >
               <MessageCircle className="w-4 h-4" />
-              <span className="text-sm">{stats.comments}</span>
+              <span className="text-sm">{stats?.comments || 0}</span>
             </button>
             <button
               onClick={handleLike}
@@ -203,7 +208,7 @@ export default function ModelCard({
               )}
             >
               <Heart className={cn('w-4 h-4', isLiked && 'fill-current')} />
-              <span className="text-sm">{stats.likes + (isLiked ? 1 : 0)}</span>
+              <span className="text-sm">{(stats?.likes || 0) + (isLiked ? 1 : 0)}</span>
             </button>
           </div>
         </div>

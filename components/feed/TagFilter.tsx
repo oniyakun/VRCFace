@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils'
 interface Tag {
   id: string
   name: string
-  count: number
+  usage_count: number
   color?: string
 }
 
@@ -113,7 +113,7 @@ export default function TagFilter({
                   ? 'bg-primary-200 text-primary-800'
                   : 'bg-gray-200 text-gray-600'
               )}>
-                {tag.count}
+                {tag.usage_count}
               </span>
             </button>
           ))

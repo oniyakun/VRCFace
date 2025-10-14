@@ -7,95 +7,62 @@ import FeedControls, { SortOption, ViewMode } from './FeedControls'
 import WaterfallLayout from './WaterfallLayout'
 import ModelCard from './ModelCard'
 import { cn } from '@/lib/utils'
+import { getFaceModels, getTags } from '@/lib/supabase'
 
-// 模拟数据类型
-interface MockModel {
+// 数据类型（基于 Supabase 返回的数据结构）
+interface FeedModel {
   id: string
   title: string
   description: string
   author: {
-    name: string
-    avatar?: string
-  }
-  thumbnail?: string
-  tags: string[]
-  stats: {
+    id: string
+    username: string
+    role: string
+  } | null
+  category: string
+  json_data: object
+  is_public: boolean
+  is_verified: boolean
+  created_at: string
+  stats?: {
+    views: number
+    downloads: number
     likes: number
     comments: number
-    downloads: number
-    views: number
   }
-  createdAt: string
-  jsonData: object
+  tags?: Array<{
+    tag: {
+      id: string
+      name: string
+      category: string
+    }
+  }>
   height?: number
 }
 
-interface MockTag {
+interface FeedTag {
   id: string
   name: string
-  count: number
+  category: string
+  usage_count?: number
 }
 
-// 模拟数据
-const mockTags: MockTag[] = [
-  { id: '1', name: '动漫角色', count: 156 },
-  { id: '2', name: '原创设计', count: 89 },
-  { id: '3', name: '游戏角色', count: 234 },
-  { id: '4', name: '机械风格', count: 67 },
-  { id: '5', name: '可爱风格', count: 198 },
-  { id: '6', name: '写实风格', count: 45 },
-  { id: '7', name: '幻想生物', count: 78 },
-  { id: '8', name: '科幻风格', count: 123 },
-  { id: '9', name: '复古风格', count: 34 },
-  { id: '10', name: '简约风格', count: 56 }
-]
-
-const generateMockModels = (count: number, startId: number = 0): MockModel[] => {
-  const titles = [
-    '可爱的猫娘角色', '机械战士模型', '梦幻精灵设计', '赛博朋克女孩',
-    '古风仙女', '未来机器人', '魔法师角色', '太空探险者',
-    '森林守护者', '海洋公主', '火焰战士', '冰雪女王',
-    '星空法师', '龙族战士', '天使守护', '恶魔猎手'
-  ]
-  
-  const descriptions = [
-    '精心设计的高质量VRC模型，包含完整的动画和表情系统',
-    '采用最新建模技术制作，支持多种自定义选项',
-    '原创设计角色，具有独特的风格和个性',
-    '高度优化的模型，适合各种VR环境使用',
-    '包含丰富的配件和服装选择',
-    '支持实时光照和阴影效果'
-  ]
-
-  const authors = [
-    { name: 'ArtistA', avatar: undefined },
-    { name: 'CreatorB', avatar: undefined },
-    { name: 'DesignerC', avatar: undefined },
-    { name: 'ModelMaker', avatar: undefined },
-    { name: 'VRCPro', avatar: undefined }
-  ]
-
-  return Array.from({ length: count }, (_, i) => {
-    const id = (startId + i + 1).toString()
-    return {
-      id,
-      title: titles[i % titles.length] + ` #${id}`,
-      description: descriptions[i % descriptions.length],
-      author: authors[i % authors.length],
-      thumbnail: Math.random() > 0.3 ? `https://picsum.photos/400/${300 + Math.floor(Math.random() * 200)}?random=${id}` : undefined,
-      tags: mockTags.slice(0, Math.floor(Math.random() * 4) + 1).map(tag => tag.name),
-      stats: {
-        likes: Math.floor(Math.random() * 500),
-        comments: Math.floor(Math.random() * 50),
-        downloads: Math.floor(Math.random() * 200),
-        views: Math.floor(Math.random() * 1000) + 100
-      },
-      createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
-      jsonData: { modelId: id, version: '1.0', type: 'vrchat-avatar' },
-      height: 300 + Math.random() * 200
-    }
-  })
-}
+// 转换 Supabase 数据为组件所需格式
+const transformModelData = (model: any): FeedModel => ({
+  ...model,
+  height: 300 + Math.random() * 200, // 为瀑布流布局添加随机高度
+  author: {
+    id: model.author?.id || '',
+    username: model.author?.username || 'Unknown',
+    role: model.author?.role || 'user'
+  },
+  stats: model.stats?.[0] || {
+    views: 0,
+    downloads: 0,
+    likes: 0,
+    comments: 0
+  }
+})
 
 interface FeedPageProps {
   className?: string
@@ -103,18 +70,55 @@ interface FeedPageProps {
 
 export default function FeedPage({ className = '' }: FeedPageProps) {
   // 状态管理
-  const [models, setModels] = useState<MockModel[]>([])
+  const [models, setModels] = useState<FeedModel[]>([])
+  const [tags, setTags] = useState<FeedTag[]>([])
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [sortBy, setSortBy] = useState<SortOption>('latest')
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(false)
+  const [initialLoading, setInitialLoading] = useState(true)
   const [hasMore, setHasMore] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [error, setError] = useState<string | null>(null)
 
   // 初始化数据
   useEffect(() => {
-    setModels(generateMockModels(20))
+    loadInitialData()
   }, [])
+
+  const loadInitialData = async () => {
+    setInitialLoading(true)
+    setError(null)
+    
+    try {
+      // 并行加载标签和模型数据
+      const [tagsResult, modelsResult] = await Promise.all([
+        getTags(),
+        getFaceModels(1, 12, { sortBy })
+      ])
+
+      if (tagsResult.error) {
+        console.error('加载标签失败:', tagsResult.error)
+      } else {
+        setTags(tagsResult.data)
+      }
+
+      if (modelsResult.error) {
+        setError(modelsResult.error)
+      } else {
+        const transformedModels = modelsResult.data.map(transformModelData)
+        setModels(transformedModels)
+        setHasMore(modelsResult.hasNext ?? false)
+        setCurrentPage(1)
+      }
+    } catch (err) {
+      console.error('加载数据失败:', err)
+      setError('加载数据失败，请稍后重试')
+    } finally {
+      setInitialLoading(false)
+    }
+  }
 
   // 筛选和排序逻辑
   const filteredAndSortedModels = useMemo(() => {
@@ -122,9 +126,13 @@ export default function FeedPage({ className = '' }: FeedPageProps) {
 
     // 标签筛选
     if (selectedTags.length > 0) {
-      filtered = filtered.filter(model =>
-        selectedTags.some(tag => model.tags.includes(mockTags.find(t => t.id === tag)?.name || ''))
-      )
+      filtered = filtered.filter(model => {
+        const modelTagNames = model.tags?.map(t => t.tag.name) || []
+        return selectedTags.some(tagId => {
+          const tag = tags.find(t => t.id === tagId)
+          return tag && modelTagNames.includes(tag.name)
+        })
+      })
     }
 
     // 搜索筛选
@@ -132,28 +140,31 @@ export default function FeedPage({ className = '' }: FeedPageProps) {
       filtered = filtered.filter(model =>
         model.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         model.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        model.author.name.toLowerCase().includes(searchTerm.toLowerCase())
+        (model.author?.username || '').toLowerCase().includes(searchTerm.toLowerCase())
       )
     }
 
-    // 排序
+    // 排序（注意：这里是客户端排序，实际应该在服务端完成）
     switch (sortBy) {
       case 'latest':
-        filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         break
       case 'popular':
-        filtered.sort((a, b) => b.stats.views - a.stats.views)
+        filtered.sort((a, b) => (b.stats?.views || 0) - (a.stats?.views || 0))
         break
       case 'trending':
-        filtered.sort((a, b) => (b.stats.likes + b.stats.downloads) - (a.stats.likes + a.stats.downloads))
+        filtered.sort((a, b) => 
+          ((b.stats?.likes || 0) + (b.stats?.downloads || 0)) - 
+          ((a.stats?.likes || 0) + (a.stats?.downloads || 0))
+        )
         break
       case 'most_liked':
-        filtered.sort((a, b) => b.stats.likes - a.stats.likes)
+        filtered.sort((a, b) => (b.stats?.likes || 0) - (a.stats?.likes || 0))
         break
     }
 
     return filtered
-  }, [models, selectedTags, searchTerm, sortBy])
+  }, [models, selectedTags, searchTerm, sortBy, tags])
 
   // 标签操作
   const handleTagToggle = (tagId: string) => {
@@ -169,20 +180,32 @@ export default function FeedPage({ className = '' }: FeedPageProps) {
   }
 
   // 加载更多
-  const handleLoadMore = () => {
-    if (loading) return
+  const handleLoadMore = async () => {
+    if (loading || !hasMore) return
     
     setLoading(true)
-    setTimeout(() => {
-      const newModels = generateMockModels(10, models.length)
-      setModels(prev => [...prev, ...newModels])
-      setLoading(false)
-      
-      // 模拟没有更多数据
-      if (models.length >= 80) {
-        setHasMore(false)
+    
+    try {
+      const nextPage = currentPage + 1
+      const result = await getFaceModels(nextPage, 12, { 
+        sortBy,
+        category: selectedTags.length > 0 ? undefined : undefined, // 暂时不支持标签过滤的服务端实现
+        search: searchTerm || undefined
+      })
+
+      if (result.error) {
+        console.error('加载更多数据失败:', result.error)
+      } else {
+        const transformedModels = result.data.map(transformModelData)
+        setModels(prev => [...prev, ...transformedModels])
+        setHasMore(result.hasNext ?? false)
+        setCurrentPage(nextPage)
       }
-    }, 1000)
+    } catch (err) {
+      console.error('加载更多数据异常:', err)
+    } finally {
+      setLoading(false)
+    }
   }
 
   // 模型操作
@@ -203,6 +226,43 @@ export default function FeedPage({ className = '' }: FeedPageProps) {
     console.log('下载模型:', id)
   }
 
+  // 初始加载状态
+  if (initialLoading) {
+    return (
+      <div className={cn('min-h-screen bg-gray-50 flex items-center justify-center', className)}>
+        <div className="text-center">
+          <div className="flex space-x-2 justify-center mb-4">
+            <div className="w-3 h-3 bg-primary-600 rounded-full animate-bounce"></div>
+            <div className="w-3 h-3 bg-primary-600 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+            <div className="w-3 h-3 bg-primary-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+          </div>
+          <p className="text-gray-600">正在加载数据...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // 错误状态
+  if (error) {
+    return (
+      <div className={cn('min-h-screen bg-gray-50 flex items-center justify-center', className)}>
+        <div className="text-center">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Search className="w-8 h-8 text-red-500" />
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">加载失败</h3>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={loadInitialData}
+            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+          >
+            重新加载
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className={cn('min-h-screen bg-gray-50', className)}>
       <div className="max-w-7xl mx-auto px-4 py-6">
@@ -211,7 +271,11 @@ export default function FeedPage({ className = '' }: FeedPageProps) {
           <div className="w-80 flex-shrink-0">
             <div className="sticky top-6">
               <TagFilter
-                tags={mockTags}
+                tags={tags.map(tag => ({
+                  id: tag.id,
+                  name: tag.name,
+                  usage_count: tag.usage_count || 0
+                }))}
                 selectedTags={selectedTags}
                 onTagToggle={handleTagToggle}
                 onClearAll={handleClearAllTags}
@@ -240,7 +304,21 @@ export default function FeedPage({ className = '' }: FeedPageProps) {
                 renderItem={(model) => (
                   <ModelCard
                     key={model.id}
-                    {...model}
+                    id={model.id}
+                    title={model.title}
+                    description={model.description}
+                    author={{
+                      name: model.author?.username || '未知作者',
+                      avatar: undefined
+                    }}
+                    tags={model.tags?.map((tagRelation: { tag: { id: string; name: string; category: string } }) => ({
+                      id: tagRelation.tag.id,
+                      name: tagRelation.tag.name
+                    })) || []}
+                    stats={model.stats}
+                    created_at={model.created_at}
+                    json_data={model.json_data}
+                    height={model.height}
                     onLike={handleLike}
                     onComment={handleComment}
                     onCopy={handleCopy}
@@ -258,7 +336,21 @@ export default function FeedPage({ className = '' }: FeedPageProps) {
                 {filteredAndSortedModels.map((model) => (
                   <ModelCard
                     key={model.id}
-                    {...model}
+                    id={model.id}
+                    title={model.title}
+                    description={model.description}
+                    author={{
+                      name: model.author?.username || '未知作者',
+                      avatar: undefined
+                    }}
+                    tags={model.tags?.map(tagRelation => ({
+                      id: tagRelation.tag.id,
+                      name: tagRelation.tag.name
+                    })) || []}
+                    stats={model.stats}
+                    created_at={model.created_at}
+                    json_data={model.json_data}
+                    height={model.height}
                     onLike={handleLike}
                     onComment={handleComment}
                     onCopy={handleCopy}
