@@ -32,7 +32,7 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
   const [error, showError] = useState('')
   const [success, setSuccess] = useState('')
   const [showResendButton, setShowResendButton] = useState(false)
-  
+
   // 使用 AuthProvider 的 login 方法
   const { login } = useAuth()
 
@@ -82,7 +82,7 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!validateForm()) return
 
     setLoading(true)
@@ -93,13 +93,13 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
       if (mode === 'login') {
         // 使用 AuthProvider 的 login 方法
         const result = await login(formData.email, formData.password)
-        
+
         if (result.success) {
           setSuccess(t('auth.success.loginSuccess'))
           onSuccess?.(null) // 用户信息会通过 AuthProvider 自动更新
         } else {
           showError(result.error || t('auth.errors.loginFailed'))
-          
+
           // 如果是登录失败且提示需要验证邮箱，显示重新发送按钮
           if (result.error?.includes('验证')) {
             setShowResendButton(true)
@@ -124,7 +124,7 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
 
         if (result.success) {
           setSuccess(result.message || t('auth.success.registerSuccess'))
-          
+
           // 注册成功后切换到登录模式
           setTimeout(() => {
             onModeChange('login')
@@ -199,6 +199,21 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
           {mode === 'register' && (
             <>
               <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                  {t('auth.form.email')}
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder={t('auth.form.emailPlaceholder')}
+                  required
+                />
+              </div>
+              <div>
                 <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
                   {t('auth.form.username')}
                 </label>
@@ -228,40 +243,8 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
                   placeholder={t('auth.form.displayNamePlaceholder')}
                 />
               </div>
-
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                  {t('auth.form.confirmPassword')}
-                </label>
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder={t('auth.form.confirmPasswordPlaceholder')}
-                  required
-                />
-              </div>
             </>
           )}
-
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                {t('auth.form.email')}
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder={t('auth.form.emailPlaceholder')}
-                required
-              />
-          </div>
 
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
@@ -287,6 +270,22 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
                 </a>
               </div>
             )}
+          </div>
+
+          <div>
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+              {t('auth.form.confirmPassword')}
+            </label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder={t('auth.form.confirmPasswordPlaceholder')}
+              required
+            />
           </div>
 
 
