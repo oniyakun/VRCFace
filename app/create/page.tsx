@@ -236,6 +236,11 @@ export default function CreatePage() {
       return false
     }
     
+    if (formData.tags.length === 0) {
+      showError(t('create.tagsRequired'))
+      return false
+    }
+    
     // 如果有捏脸数据，则验证JSON格式
     if (formData.jsonData.trim() && !validateJsonData(formData.jsonData)) {
       showError(t('create.invalidJsonFormat'))
@@ -500,6 +505,7 @@ export default function CreatePage() {
               <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
                 <Tag className="w-4 h-4 mr-2" />
                 {t('create.form.tags')}
+                <span className="text-red-500 ml-1">*</span>
               </label>
               
               {/* 已选标签 */}

@@ -88,6 +88,7 @@ export const en = {
     description: 'Description',
     descriptionPlaceholder: 'Describe your model features, style or usage scenarios...',
     descriptionRequired: 'Please enter a description',
+    tagsRequired: 'Please select at least one tag',
     images: 'Preview Images',
     imagesSubtitle: 'Up to 5 images',
     imagesSelected: '{count} images selected',

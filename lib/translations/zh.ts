@@ -83,6 +83,7 @@ export const zh = {
     description: '描述',
     descriptionPlaceholder: '描述您的模型特点、风格或使用场景...',
     descriptionRequired: '请输入描述',
+    tagsRequired: '请至少选择一个标签',
     images: '预览图片',
     imagesSubtitle: '最多5张',
     imagesSelected: '已选择 {count} 张图片',

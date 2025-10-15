@@ -98,6 +98,7 @@ export const ja = {
     coverImage: 'カバー',
     firstImageAsCover: '最初の画像がカバーとして表示されます',
     tags: 'タグ',
+    tagsRequired: '少なくとも1つのタグを選択してください',
     selectedTags: '選択されたタグ',
     availableTags: 'タグを選択',
     modelName: 'モデル名',
