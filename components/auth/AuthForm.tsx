@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { useAuth } from '@/components/auth/AuthProvider'
 
 interface AuthFormProps {
@@ -139,7 +139,7 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
         }
       }
     } catch (error) {
-      console.error('Auth error:', error)
+      // Auth error handled silently
       showError('网络错误，请稍后重试')
     } finally {
       setLoading(false)
@@ -174,7 +174,7 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
         showError(result.error || '发送验证邮件失败')
       }
     } catch (error) {
-      console.error('Resend confirmation error:', error)
+      // Resend confirmation error handled silently
       showError('网络错误，请稍后重试')
     } finally {
       setLoading(false)

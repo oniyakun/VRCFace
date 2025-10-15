@@ -2,7 +2,7 @@
 
 import { Heart, MessageCircle, Copy, User } from 'lucide-react'
 import Link from 'next/link'
-import Button from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/ToastProvider'
 
 // 模拟数据 - 后续将从 Supabase 获取
@@ -109,7 +109,7 @@ export default function ContentPreview() {
                 {/* 悬停时显示的操作按钮 */}
                 <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
                   <Button
-                    variant="primary"
+                    variant="default"
                     size="sm"
                     onClick={() => handleCopyJSON(post.id)}
                     className="transform scale-95 group-hover:scale-100 transition-transform duration-200"

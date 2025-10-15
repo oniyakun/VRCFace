@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Heart, MessageCircle, Copy, Download, Eye, Calendar, User, Star, User as UserIcon, Palette } from 'lucide-react'
 import { cn, formatRelativeTime } from '@/lib/utils'
-import Button from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { useAuth } from '@/components/auth/AuthProvider'
 
 interface ModelCardProps {

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { User } from '@/types'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/ToastProvider'
 import { Star, Heart, MessageCircle, Eye, Download, Edit, Trash2, MoreVertical } from 'lucide-react'
 import ModelDetailOverlay from '@/components/feed/ModelDetailOverlay'

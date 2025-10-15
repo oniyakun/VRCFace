@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { useAuth } from '@/components/auth/AuthProvider'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 
 export default function Navigation() {
   const { user, isAuthenticated, logout } = useAuth()
@@ -69,7 +69,7 @@ export default function Navigation() {
         })
       }
     } catch (error) {
-      console.error('Logout API error:', error)
+      // Logout API error handled silently
     } finally {
       logout()
       router.push('/')
@@ -117,7 +117,7 @@ export default function Navigation() {
                 {/* 发帖按钮 */}
                 <Link href="/create">
                   <Button 
-                    variant="primary" 
+                    variant="default" 
                     size="sm"
                     className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center space-x-2"
                   >

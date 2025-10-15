@@ -60,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       return null
     } catch (error) {
-      console.error('Error fetching user details:', error)
+      // Error fetching user details handled silently
       return null
     }
   }
@@ -69,21 +69,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // 获取初始会话
     const getInitialSession = async () => {
       try {
+        // AuthProvider: Getting initial session...
         const { data: { session: initialSession }, error } = await supabase.auth.getSession()
         
+        // AuthProvider: Initial session result handled silently
+        
         if (error) {
-          console.error('Error getting initial session:', error)
+          // AuthProvider: Error getting initial session handled silently
           setIsLoading(false)
           return
         }
 
         if (initialSession?.user) {
+          // AuthProvider: Found valid session, setting user state
           setSession(initialSession)
           const userDetails = await fetchUserDetails(initialSession.user, initialSession.access_token)
+          // AuthProvider: User details handled silently
           setUser(userDetails)
+        } else {
+          // AuthProvider: No valid session found
         }
       } catch (error) {
-        console.error('Error in getInitialSession:', error)
+        // AuthProvider: Error in getInitialSession handled silently
       } finally {
         setIsLoading(false)
       }
@@ -94,16 +101,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // 监听认证状态变化
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email)
+        // AuthProvider: Auth state changed handled silently
         
         setSession(session)
         
         if (session?.user) {
           // 用户登录或会话恢复
+          // AuthProvider: User session restored/logged in
           const userDetails = await fetchUserDetails(session.user, session.access_token)
           setUser(userDetails)
         } else {
           // 用户登出或会话过期
+          // AuthProvider: User session expired/logged out
           setUser(null)
         }
         
@@ -126,7 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       })
 
       if (error) {
-        console.error('Supabase login error:', error)
+        // Supabase login error handled silently
         
         // 处理常见错误
         if (error.message.includes('Invalid login credentials')) {
@@ -146,7 +155,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: false, error: '登录失败，请稍后重试' }
       }
     } catch (error) {
-      console.error('Login error:', error)
+      // Login error handled silently
       return { success: false, error: '网络错误，请稍后重试' }
     } finally {
       setIsLoading(false)
@@ -157,12 +166,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { error } = await supabase.auth.signOut()
       if (error) {
-        console.error('Logout error:', error)
+        // Logout error handled silently
       }
       // onAuthStateChange 会自动处理状态清理
       router.push('/auth')
     } catch (error) {
-      console.error('Logout error:', error)
+      // Logout error handled silently
     }
   }
 
@@ -173,7 +182,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(userDetails)
       }
     } catch (error) {
-      console.error('Refresh user error:', error)
+      // Refresh user error handled silently
     }
   }
 

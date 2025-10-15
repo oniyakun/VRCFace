@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { useToast } from '@/components/ui/ToastProvider'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 
 export default function SettingsPage() {
   const { user, isAuthenticated, isLoading, session } = useAuth()

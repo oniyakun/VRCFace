@@ -140,13 +140,13 @@ export async function GET(request: NextRequest) {
 
       userData = {
         ...newUser,
-        stats: {
+        stats: [{
           models_count: 0,
           likes_received: 0,
           comments_received: 0,
           followers_count: 0,
           following_count: 0
-        }
+        }]
       }
     } else if (userError || !userData) {
       console.error('User data fetch error:', userError)

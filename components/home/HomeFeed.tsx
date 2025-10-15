@@ -86,10 +86,10 @@ export default function HomeFeed() {
 
         // 检查是否有错误
         if (modelsResponse.error) {
-          console.error('获取模型数据失败:', modelsResponse.error)
+          // Models fetch error handled silently
         }
         if (tagsResponse.error) {
-          console.error('获取标签数据失败:', tagsResponse.error)
+          // Tags fetch error handled silently
         }
 
         // 转换模型数据格式
@@ -103,7 +103,7 @@ export default function HomeFeed() {
         setModels(transformedModels)
         setTags(tagsResponse.data || [])
       } catch (error) {
-        console.error('获取数据失败:', error)
+        // Data fetch error handled silently
       } finally {
         setIsLoading(false)
       }
@@ -246,7 +246,7 @@ export default function HomeFeed() {
         {/* 主要内容区域 */}
         <div className="flex flex-col lg:flex-row gap-8">
           {/* 左侧标签筛选 */}
-          <div className="lg:w-64 flex-shrink-0">
+          <div className="lg:w-70 flex-shrink-0">
             <div className="sticky top-8">
               <TagFilter
                 tags={tagsWithCounts}

@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { ArrowLeft, BookOpen, Code, Users, Zap } from 'lucide-react'
-import Button from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 
 export default function DocsPage() {
   return (
