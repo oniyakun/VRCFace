@@ -4,8 +4,10 @@ import { Github, BookOpen, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import ScrollIndicator from '@/components/ui/ScrollIndicator'
+import { useLanguage } from '@/components/i18n/LanguageProvider'
 
 export default function HeroSection() {
+  const { t } = useLanguage()
 
   const handleGithubClick = () => {
     // 这里可以替换为实际的 GitHub 仓库地址
@@ -36,30 +38,28 @@ export default function HeroSection() {
             </span>
           </h1>
           <p className="text-xl sm:text-2xl text-gray-600 mb-2">
-            免费公开的 VRChat 捏脸数据分享平台
+            {t('home.subtitle')}
           </p>
         </div>
 
         {/* 描述文字 */}
         <div className="mb-12 animate-slide-up">
           <p className="text-lg sm:text-xl text-gray-700 mb-6 leading-relaxed max-w-2xl mx-auto">
-            专为 VRChat 玩家打造的捏脸数据分享平台。
-            <br />
-            下载我们的插件分享你的捏脸数据，通过标签筛选找到心仪的模型！
+            {t('home.description')}
           </p>
           
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-2xl mx-auto text-sm text-gray-600">
             <div className="flex items-center justify-center space-x-2">
               <div className="w-2 h-2 bg-primary-500 rounded-full"></div>
-              <span>插件分享</span>
+              <span>{t('home.features.pluginShare')}</span>
             </div>
             <div className="flex items-center justify-center space-x-2">
               <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-              <span>标签筛选</span>
+              <span>{t('home.features.tagFilter')}</span>
             </div>
             <div className="flex items-center justify-center space-x-2">
               <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
-              <span>免费公开</span>
+              <span>{t('home.features.freeOpen')}</span>
             </div>
           </div>
         </div>
@@ -72,7 +72,7 @@ export default function HeroSection() {
               className="w-full sm:w-auto min-w-[160px] shadow-lg hover:shadow-xl transform hover:-translate-y-1"
             >
               <BookOpen className="w-5 h-5 mr-2" />
-              查看文档
+              {t('home.viewDocs')}
             </Button>
           </Link>
           
@@ -83,7 +83,7 @@ export default function HeroSection() {
             className="w-full sm:w-auto min-w-[160px] shadow-lg hover:shadow-xl transform hover:-translate-y-1"
           >
             <Github className="w-5 h-5 mr-2" />
-            前往 GitHub
+            {t('home.goToGithub')}
           </Button>
         </div>
 

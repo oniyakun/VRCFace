@@ -4,6 +4,7 @@ import { Heart, MessageCircle, Copy, User } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/ToastProvider'
+import { useLanguage } from '@/components/i18n/LanguageProvider'
 
 // 模拟数据 - 后续将从 Supabase 获取
 const mockPosts = [
@@ -46,6 +47,7 @@ const mockPosts = [
 ]
 
 export default function ContentPreview() {
+  const { t } = useLanguage()
   const { showSuccess, showError } = useToast()
   
   const handleCopyJSON = (postId: number) => {
@@ -60,8 +62,8 @@ export default function ContentPreview() {
     }
     
     navigator.clipboard.writeText(JSON.stringify(mockJSON, null, 2))
-      .then(() => showSuccess('JSON 数据已复制到剪贴板！'))
-      .catch(() => showError('复制失败，请重试'))
+      .then(() => showSuccess(t('common.copySuccess')))
+      .catch(() => showError(t('common.copyError')))
   }
 
   return (
@@ -70,25 +72,33 @@ export default function ContentPreview() {
         {/* 区域标题 */}
         <div className="text-center mb-12">
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-            热门模型展示
+            {t('home.popularModels')}
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            探索社区中最受欢迎的 VRChat 捏脸数据，通过标签筛选找到适合你的完美模型
+            {t('home.exploreDescription')}
           </p>
         </div>
 
         {/* 标签筛选预览 */}
         <div className="flex flex-wrap justify-center gap-3 mb-12">
-          {['全部', '可爱', '酷炫', '搞笑', '温柔', '科幻', '动物'].map((tag) => (
+          {[
+            { key: 'all', label: t('home.tags.all') },
+            { key: 'cute', label: t('home.tags.cute') },
+            { key: 'cool', label: t('home.tags.cool') },
+            { key: 'funny', label: t('home.tags.funny') },
+            { key: 'gentle', label: t('home.tags.gentle') },
+            { key: 'scifi', label: t('home.tags.scifi') },
+            { key: 'animal', label: t('home.tags.animal') }
+          ].map((tag, index) => (
             <button
-              key={tag}
+              key={tag.key}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
-                tag === '全部' 
+                index === 0
                   ? 'bg-primary-600 text-white' 
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              {tag}
+              {tag.label}
             </button>
           ))}
         </div>
@@ -161,7 +171,7 @@ export default function ContentPreview() {
                     </span>
                   </div>
                   <button className="text-primary-600 hover:text-primary-700 font-medium">
-                    查看详情
+                    {t('home.viewDetails')}
                   </button>
                 </div>
               </div>

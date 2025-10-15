@@ -9,6 +9,7 @@ import ModelCard from './ModelCard'
 import ModelDetailOverlay from './ModelDetailOverlay'
 import { cn } from '@/lib/utils'
 import { getFaceModels, getTags } from '@/lib/supabase'
+import { useLanguage } from '@/components/i18n/LanguageProvider'
 
 // 数据类型（基于 Supabase 返回的数据结构）
 interface FeedModel {
@@ -86,6 +87,7 @@ export default function FeedPage({ className = '' }: FeedPageProps) {
   const [hasMore, setHasMore] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
   const [error, showError] = useState<string | null>(null)
+  const { t } = useLanguage()
 
   // 初始化数据
   useEffect(() => {
@@ -402,8 +404,8 @@ export default function FeedPage({ className = '' }: FeedPageProps) {
                 <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Search className="w-8 h-8 text-gray-400" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">未找到匹配的模型</h3>
-                <p className="text-gray-600">尝试调整搜索条件或筛选标签</p>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">{t('feed.noModelsFound')}</h3>
+                <p className="text-gray-600">{t('feed.adjustFilters')}</p>
               </div>
             )}
           </div>

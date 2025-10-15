@@ -5,6 +5,7 @@ import { getFaceModelById } from '@/lib/supabase'
 import { Calendar, User, Eye, Download, Heart, MessageCircle, X, Image as ImageIcon, Copy, Check, User as UserIcon, Palette } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import ImageLightbox from '@/components/ui/ImageLightbox'
+import { useLanguage } from '@/components/i18n/LanguageProvider'
 
 interface ModelDetailOverlayProps {
   id: string
@@ -13,6 +14,7 @@ interface ModelDetailOverlayProps {
 }
 
 export default function ModelDetailOverlay({ id, onClose, className = '' }: ModelDetailOverlayProps) {
+  const { t } = useLanguage()
   const [model, setModel] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, showError] = useState<string | null>(null)
@@ -31,11 +33,11 @@ export default function ModelDetailOverlay({ id, onClose, className = '' }: Mode
         } else if (result.data) {
           setModel(result.data)
         } else {
-          showError('未找到模型')
+          showError(t('modelCard.modelNotFound'))
         }
       } catch (err) {
         console.error('获取模型详情失败:', err)
-        showError('获取模型详情失败')
+        showError(t('modelCard.loadFailed'))
       } finally {
         setLoading(false)
       }
@@ -129,7 +131,7 @@ export default function ModelDetailOverlay({ id, onClose, className = '' }: Mode
         className
       )}>
         <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-semibold">模型详情</h2>
+          <h2 className="text-lg font-semibold">{t('modelCard.modelDetails')}</h2>
           <div className="flex items-center gap-2">
             {/* 复制按钮 */}
             <button
@@ -146,12 +148,12 @@ export default function ModelDetailOverlay({ id, onClose, className = '' }: Mode
               {copySuccess ? (
                 <>
                   <Check className="w-4 h-4" />
-                  已复制
+                  {t('modelCard.copied')}
                 </>
               ) : (
                 <>
                   <Copy className="w-4 h-4" />
-                  复制捏脸数据
+                  {t('modelCard.copyFaceData')}
                 </>
               )}
             </button>
@@ -165,12 +167,12 @@ export default function ModelDetailOverlay({ id, onClose, className = '' }: Mode
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <div className="h-8 w-8 border-2 border-primary-600 border-t-transparent rounded-full animate-spin" />
-              <span className="ml-3 text-gray-600">加载中...</span>
+              <span className="ml-3 text-gray-600">{t('common.loading')}</span>
             </div>
           ) : error || !model ? (
             <div className="text-center py-12">
-              <div className="text-red-500 mb-2">加载失败</div>
-              <div className="text-gray-600">{error || '未找到模型详情'}</div>
+              <div className="text-red-500 mb-2">{t('common.loadFailed')}</div>
+              <div className="text-gray-600">{error || t('modelCard.modelDetailsNotFound')}</div>
             </div>
           ) : (
             <div className="space-y-6">
@@ -179,7 +181,7 @@ export default function ModelDetailOverlay({ id, onClose, className = '' }: Mode
                 <div>
                   <h3 className="text-lg font-semibold mb-3 flex items-center">
                     <ImageIcon className="w-5 h-5 mr-2" />
-                    模型图片 ({images.length})
+                    {t('modelCard.modelImages')} ({images.length})
                   </h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                     {images.map((image: string, index: number) => (
@@ -202,7 +204,7 @@ export default function ModelDetailOverlay({ id, onClose, className = '' }: Mode
                         </div>
                         {index === 0 && (
                           <div className="absolute top-2 left-2 bg-primary-500 text-white text-xs px-2 py-1 rounded-md">
-                            封面
+                            {t('modelCard.cover')}
                           </div>
                         )}
                       </div>
@@ -220,7 +222,7 @@ export default function ModelDetailOverlay({ id, onClose, className = '' }: Mode
                     <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center mr-2">
                       <User className="w-3 h-3 text-gray-600" />
                     </div>
-                    <span className="font-medium">{model.author?.username || '未知作者'}</span>
+                    <span className="font-medium">{model.author?.username || t('common.unknownAuthor')}</span>
                   </div>
                   <div className="flex items-center">
                     <Calendar className="w-4 h-4 mr-1" />
@@ -237,7 +239,7 @@ export default function ModelDetailOverlay({ id, onClose, className = '' }: Mode
                     <div className="mb-6">
                       <h3 className="text-lg font-semibold mb-3 flex items-center">
                         <UserIcon className="w-5 h-5 mr-2 text-blue-600" />
-                        模型名字
+                        {t('modelCard.modelName')}
                       </h3>
                       <div className="flex flex-wrap gap-2">
                         {model.tags
@@ -260,7 +262,7 @@ export default function ModelDetailOverlay({ id, onClose, className = '' }: Mode
                     <div className="mb-6">
                       <h3 className="text-lg font-semibold mb-3 flex items-center">
                         <Palette className="w-5 h-5 mr-2 text-purple-600" />
-                        模型风格
+                        {t('modelCard.modelStyle')}
                       </h3>
                       <div className="flex flex-wrap gap-2">
                         {model.tags
@@ -283,7 +285,7 @@ export default function ModelDetailOverlay({ id, onClose, className = '' }: Mode
               {/* JSON 数据展示 */}
               {model.json_data && (
                 <div>
-                  <h3 className="text-lg font-semibold mb-3">捏脸数据</h3>
+                  <h3 className="text-lg font-semibold mb-3">{t('modelCard.faceData')}</h3>
                   <div className="bg-gray-100 rounded-lg p-4 max-h-64 overflow-y-auto">
                     <pre className="text-sm text-gray-700 whitespace-pre-wrap">
                       {JSON.stringify(model.json_data, null, 2)}

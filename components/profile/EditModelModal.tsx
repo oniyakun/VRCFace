@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/auth/AuthProvider'
+import { useLanguage } from '@/components/i18n/LanguageProvider'
 import { useToast } from '@/components/ui/ToastProvider'
 import { Button } from '@/components/ui/button'
 import { Upload, X, Plus, Tag, Image as ImageIcon, FileText, Code, User, Palette } from 'lucide-react'
@@ -35,6 +36,7 @@ interface EditModelModalProps {
 
 export default function EditModelModal({ model, isOpen, onClose, onSave }: EditModelModalProps) {
   const { user, isAuthenticated } = useAuth()
+  const { t } = useLanguage()
   const { showSuccess, showError } = useToast()
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -53,7 +55,7 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
   const [deletedImages, setDeletedImages] = useState<string[]>([]) // 被删除的原有图片
   const [availableTags, setAvailableTags] = useState<Tag[]>([])
   const [newTagName, setNewTagName] = useState('')
-  const [newTagType, setNewTagType] = useState<'model_name' | 'model_style'>('model_style')
+  const [newTagType, setNewTagType] = useState<'model_name' | 'model_style'>('model_name')
   const [pendingNewTags, setPendingNewTags] = useState<Tag[]>([]) // 存储待提交的新标签
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -126,7 +128,7 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
 
     // 检查总数量限制
     if (imagePreviews.length + selectedImages.length + files.length > 5) {
-      showError('最多只能上传5张图片')
+      showError(t('editModel.maxImagesError'))
       return
     }
 
@@ -139,7 +141,7 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
         // 验证图片文件
         const validation = validateImageFile(file)
         if (!validation.valid) {
-          showError(validation.error || '图片文件无效')
+          showError(validation.error || t('editModel.invalidImage'))
           continue
         }
         
@@ -163,7 +165,7 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
         setError(null)
       }
     } catch (error) {
-      showError('图片处理失败，请重试')
+      showError(t('editModel.imageProcessFailed'))
     }
   }
 
@@ -233,11 +235,11 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
   // 表单验证
   const validateForm = () => {
     if (!formData.title.trim()) {
-      showError('请输入标题')
+      showError(t('editModel.titleRequired'))
       return false
     }
     if (!formData.description.trim()) {
-      showError('请输入描述')
+      showError(t('editModel.descriptionRequired'))
       return false
     }
     
@@ -246,7 +248,7 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
       try {
         JSON.parse(formData.jsonData)
       } catch {
-        showError('JSON数据格式不正确')
+        showError(t('editModel.invalidJson'))
         return false
       }
     }
@@ -268,7 +270,7 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
       const { data: { session } } = await supabase.auth.getSession()
       
       if (!session?.access_token) {
-        showError('请先登录')
+        showError(t('editModel.loginRequired'))
         return
       }
       
@@ -313,15 +315,15 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
       
       if (response.ok) {
         const data = await response.json()
-        showSuccess('作品更新成功！')
+        showSuccess(t('editModel.updateSuccess'))
         onSave(data.data)
         onClose()
       } else {
         const errorData = await response.json()
-        showError(errorData.message || '更新失败，请重试')
+        showError(errorData.message || t('editModel.updateFailed'))
       }
     } catch (error) {
-      showError('更新失败，请检查网络连接')
+      showError(t('editModel.networkError'))
     } finally {
       setIsSubmitting(false)
     }
@@ -333,7 +335,7 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-gray-900">编辑作品</h2>
+          <h2 className="text-xl font-semibold text-gray-900">{t('editModel.title')}</h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -354,13 +356,13 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
           <div>
             <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
               <FileText className="w-4 h-4 mr-2" />
-              标题 *
+              {t('editModel.titleField')} *
             </label>
             <input
               type="text"
               value={formData.title}
               onChange={(e) => handleInputChange('title', e.target.value)}
-              placeholder="为您的模型起个好听的名字"
+              placeholder={t('editModel.titlePlaceholder')}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               maxLength={200}
             />
@@ -369,12 +371,12 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
           {/* 描述 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              描述 *
+              {t('editModel.description')} *
             </label>
             <textarea
               value={formData.description}
               onChange={(e) => handleInputChange('description', e.target.value)}
-              placeholder="描述您的模型特点、风格或使用场景..."
+              placeholder={t('editModel.descriptionPlaceholder')}
               rows={4}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
               maxLength={1000}
@@ -385,7 +387,7 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
           <div>
             <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
               <ImageIcon className="w-4 h-4 mr-2" />
-              预览图片 * (最多5张)
+              {t('editModel.previewImages')} * ({t('editModel.maxImages')})
             </label>
             
             {/* 图片预览网格 */}
@@ -396,7 +398,7 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
                     <div key={index} className="relative group">
                       <img
                         src={preview}
-                        alt={`预览 ${index + 1}`}
+                        alt={`${t('common.view')} ${index + 1}`}
                         className="w-full aspect-square object-cover rounded-lg border-2 border-gray-200"
                       />
                       <button
@@ -408,7 +410,7 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
                       </button>
                       {index === 0 && (
                         <div className="absolute bottom-2 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded">
-                          封面
+                          {t('editModel.coverImage')}
                         </div>
                       )}
                     </div>
@@ -425,9 +427,9 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
               >
                 <Upload className="w-8 h-8 text-gray-400 mb-2" />
                 <p className="text-sm text-gray-600">
-                  {imagePreviews.length === 0 ? '点击上传图片' : `继续添加图片 (${5 - imagePreviews.length} 张剩余)`}
+                  {imagePreviews.length === 0 ? t('editModel.clickToUpload') : `${t('editModel.continueUpload')} (${5 - imagePreviews.length} ${t('editModel.remaining')})`}
                 </p>
-                <p className="text-xs text-gray-400 mt-1">支持 JPG, PNG 格式，可多选</p>
+                <p className="text-xs text-gray-400 mt-1">{t('editModel.supportedFormats')}</p>
               </div>
             )}
             
@@ -442,7 +444,7 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
             
             {imagePreviews.length > 0 && (
               <p className="text-xs text-gray-500 mt-2">
-                第一张图片将作为封面显示
+                {t('editModel.firstImageAsCover')}
               </p>
             )}
           </div>
@@ -451,7 +453,7 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
           <div>
             <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
               <Tag className="w-4 h-4 mr-2" />
-              标签
+              {t('editModel.tags')}
             </label>
             
             {/* 已选标签 */}
@@ -462,7 +464,7 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
                   <div className="mb-3">
                     <div className="flex items-center text-xs text-blue-600 font-medium mb-2">
                       <User className="w-3 h-3 mr-1" />
-                      模型名字
+                      {t('editModel.modelName')}
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {formData.tags
@@ -474,7 +476,7 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
                           >
                             <User className="w-3 h-3 mr-1" />
                             {tag.name}
-                            {tag.isNew && <span className="ml-1 text-xs">(新)</span>}
+                            {tag.isNew && <span className="ml-1 text-xs">({t('common.new')})</span>}
                             <button
                               type="button"
                               onClick={() => removeTag(tag.id)}
@@ -493,7 +495,7 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
                   <div className="mb-3">
                     <div className="flex items-center text-xs text-purple-600 font-medium mb-2">
                       <Palette className="w-3 h-3 mr-1" />
-                      模型风格
+                      {t('editModel.modelStyle')}
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {formData.tags
@@ -505,7 +507,7 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
                           >
                             <Palette className="w-3 h-3 mr-1" />
                             {tag.name}
-                            {tag.isNew && <span className="ml-1 text-xs">(新)</span>}
+                            {tag.isNew && <span className="ml-1 text-xs">({t('common.new')})</span>}
                             <button
                               type="button"
                               onClick={() => removeTag(tag.id)}
@@ -523,14 +525,14 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
             
             {/* 可选标签 */}
             <div className="mb-4">
-              <h4 className="text-sm font-medium text-gray-600 mb-3">选择标签:</h4>
+              <h4 className="text-sm font-medium text-gray-600 mb-3">{t('editModel.selectTags')}:</h4>
               
               {/* 模型名字标签 */}
               {availableTags.filter(tag => tag.tag_type === 'model_name').length > 0 && (
                 <div className="mb-3">
                   <div className="flex items-center text-xs text-blue-600 font-medium mb-2">
                     <User className="w-3 h-3 mr-1" />
-                    模型名字
+                    {t('editModel.modelName')}
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {availableTags
@@ -556,7 +558,7 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
                 <div className="mb-3">
                   <div className="flex items-center text-xs text-purple-600 font-medium mb-2">
                     <Palette className="w-3 h-3 mr-1" />
-                    模型风格
+                    {t('editModel.modelStyle')}
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {availableTags
@@ -580,7 +582,7 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
             
             {/* 新建标签 */}
             <div className="border-t pt-4">
-              <h4 className="text-sm font-medium text-gray-600 mb-3">创建新标签</h4>
+              <h4 className="text-sm font-medium text-gray-600 mb-3">{t('editModel.createNewTag')}</h4>
               
               {/* 标签类型选择 */}
               <div className="flex mb-3 bg-gray-100 rounded-lg p-1">
@@ -595,7 +597,7 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
                   )}
                 >
                   <User className="w-4 h-4 mr-2" />
-                  模型名字
+                  {t('editModel.modelName')}
                 </button>
                 <button
                   type="button"
@@ -608,7 +610,7 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
                   )}
                 >
                   <Palette className="w-4 h-4 mr-2" />
-                  模型风格
+                  {t('editModel.modelStyle')}
                 </button>
               </div>
               
@@ -617,7 +619,7 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
                   type="text"
                   value={newTagName}
                   onChange={(e) => setNewTagName(e.target.value)}
-                  placeholder={`输入新的${newTagType === 'model_name' ? '模型名字' : '模型风格'}标签`}
+                  placeholder={`${t('editModel.enterNew')}${newTagType === 'model_name' ? t('editModel.modelName') : t('editModel.modelStyle')}${t('editModel.tag')}`}
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                   onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), createNewTag())}
                 />
@@ -637,17 +639,17 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
           <div>
             <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
               <Code className="w-4 h-4 mr-2" />
-              VRChat捏脸数据 (JSON格式)
+              {t('editModel.jsonData')}
             </label>
             <textarea
               value={formData.jsonData}
               onChange={(e) => handleInputChange('jsonData', e.target.value)}
               rows={8}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
-              placeholder="粘贴你的VRChat捏脸JSON数据（可选）..."
+              placeholder={t('editModel.jsonPlaceholder')}
             />
             <p className="text-xs text-gray-500 mt-1">
-              可选项：如果提供，其他用户可以复制您的捏脸数据
+              {t('editModel.jsonDescription')}
             </p>
           </div>
           
@@ -661,7 +663,7 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
               className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
             />
             <label htmlFor="isPublic" className="ml-2 text-sm text-gray-700">
-              公开发布（其他用户可以查看和下载）
+              {t('editModel.publicSetting')}
             </label>
           </div>
           
@@ -672,14 +674,14 @@ export default function EditModelModal({ model, isOpen, onClose, onSave }: EditM
               onClick={onClose}
               className="mr-3 px-6 py-2 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
             >
-              取消
+              {t('common.cancel')}
             </Button>
             <Button
               type="submit"
               disabled={isSubmitting}
               className="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
             >
-              {isSubmitting ? '更新中...' : '更新作品'}
+              {isSubmitting ? t('editModel.updating') : t('editModel.updateWork')}
             </Button>
           </div>
         </form>

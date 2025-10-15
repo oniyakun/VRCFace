@@ -2,6 +2,7 @@
 
 import { ChevronDown } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useLanguage } from '@/components/i18n/LanguageProvider'
 
 interface ScrollIndicatorProps {
   targetId: string
@@ -10,6 +11,7 @@ interface ScrollIndicatorProps {
 
 export default function ScrollIndicator({ targetId, className = '' }: ScrollIndicatorProps) {
   const [isVisible, setIsVisible] = useState(true)
+  const { t } = useLanguage()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -42,7 +44,7 @@ export default function ScrollIndicator({ targetId, className = '' }: ScrollIndi
       onClick={scrollToTarget}
     >
       <div className="flex flex-col items-center space-y-2 text-secondary-600 hover:text-primary-600 transition-colors duration-200">
-        <span className="text-sm font-medium">向下滚动</span>
+        <span className="text-sm font-medium">{t('ui.scrollIndicator.scrollDown')}</span>
         <ChevronDown className="w-6 h-6 animate-bounce-slow" />
       </div>
     </div>

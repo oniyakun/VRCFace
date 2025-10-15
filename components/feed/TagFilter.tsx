@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Search, X, Hash, User, Palette } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useLanguage } from '@/components/i18n/LanguageProvider'
 
 interface Tag {
   id: string
@@ -30,6 +31,7 @@ export default function TagFilter({
   onClearAll, 
   className = '' 
 }: TagFilterProps) {
+  const { t } = useLanguage()
   const [searchTerm, setSearchTerm] = useState('')
   const [activeSection, setActiveSection] = useState<'model_name' | 'model_style'>('model_name')
 
@@ -66,7 +68,7 @@ export default function TagFilter({
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900 flex items-center">
           <Hash className="w-5 h-5 mr-2 text-primary-600" />
-          标签筛选
+          {t('tagFilter.title')}
         </h3>
         {selectedTags.length > 0 && (
           <button
@@ -74,7 +76,7 @@ export default function TagFilter({
             className="text-sm text-gray-500 hover:text-gray-700 flex items-center"
           >
             <X className="w-4 h-4 mr-1" />
-            清除全部
+            {t('tagFilter.clearAll')}
           </button>
         )}
       </div>
@@ -91,7 +93,7 @@ export default function TagFilter({
           )}
         >
           <User className="w-4 h-4 mr-1" />
-          模型名字
+          {t('tagFilter.modelName')}
         </button>
         <button
           onClick={() => setActiveSection('model_style')}
@@ -103,7 +105,7 @@ export default function TagFilter({
           )}
         >
           <Palette className="w-4 h-4 mr-1" />
-          模型风格
+          {t('tagFilter.modelStyle')}
         </button>
       </div>
 
@@ -112,7 +114,9 @@ export default function TagFilter({
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
         <input
           type="text"
-          placeholder={`搜索${activeSection === 'model_name' ? '模型名字' : activeSection === 'model_style' ? '模型风格' : ''}标签...`}
+          placeholder={t('tagFilter.searchPlaceholder', { 
+            type: activeSection === 'model_name' ? t('tagFilter.modelName') : t('tagFilter.modelStyle')
+          })}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-colors"
@@ -122,7 +126,7 @@ export default function TagFilter({
       {/* 已选标签显示 */}
       {selectedTags.length > 0 && (
         <div className="mb-4">
-          <p className="text-sm text-gray-600 mb-2">已选择 ({selectedTags.length})</p>
+          <p className="text-sm text-gray-600 mb-2">{t('tagFilter.selected')} ({selectedTags.length})</p>
           <div className="flex flex-wrap gap-2">
             {selectedTags.map(tagId => {
               const tag = tags.find(t => t.id === tagId)
@@ -156,7 +160,7 @@ export default function TagFilter({
       <div className="space-y-1 max-h-96 overflow-y-auto">
         {filteredTags.length === 0 ? (
           <p className="text-gray-500 text-sm text-center py-4">
-            {searchTerm ? '未找到匹配的标签' : '暂无标签'}
+            {searchTerm ? t('tagFilter.noMatch') : t('tagFilter.noTags')}
           </p>
         ) : (
           filteredTags.map(tag => (

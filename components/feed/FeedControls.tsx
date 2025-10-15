@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { ChevronDown, Grid3X3, List, Search, SlidersHorizontal, TrendingUp, Clock, Heart } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useLanguage } from '@/components/i18n/LanguageProvider'
 
 export type SortOption = 'latest' | 'popular' | 'trending' | 'most_liked'
 export type ViewMode = 'grid' | 'list'
@@ -18,13 +19,6 @@ interface FeedControlsProps {
   className?: string
 }
 
-const sortOptions = [
-  { value: 'latest' as SortOption, label: '最新发布', icon: Clock },
-  { value: 'trending' as SortOption, label: '热门趋势', icon: TrendingUp },
-  { value: 'popular' as SortOption, label: '最受欢迎', icon: Heart },
-  { value: 'most_liked' as SortOption, label: '最多点赞', icon: Heart }
-]
-
 export default function FeedControls({
   sortBy,
   viewMode,
@@ -36,6 +30,14 @@ export default function FeedControls({
   className = ''
 }: FeedControlsProps) {
   const [showSortDropdown, setShowSortDropdown] = useState(false)
+  const { t } = useLanguage()
+
+  const sortOptions = [
+    { value: 'latest' as SortOption, label: t('feedControls.sortOptions.latest'), icon: Clock },
+    { value: 'trending' as SortOption, label: t('feedControls.sortOptions.trending'), icon: TrendingUp },
+    { value: 'popular' as SortOption, label: t('feedControls.sortOptions.popular'), icon: Heart },
+    { value: 'most_liked' as SortOption, label: t('feedControls.sortOptions.mostLiked'), icon: Heart }
+  ]
 
   const currentSort = sortOptions.find(option => option.value === sortBy)
 
@@ -49,7 +51,7 @@ export default function FeedControls({
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              placeholder="搜索模型..."
+              placeholder={t('feedControls.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
               className="pl-10 pr-4 py-2 w-64 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-colors"
@@ -59,7 +61,7 @@ export default function FeedControls({
           {/* 统计信息 */}
           {totalCount !== undefined && (
             <span className="text-sm text-gray-600">
-              共 <span className="font-semibold text-gray-900">{totalCount}</span> 个模型
+              {t('feedControls.totalCount', { count: totalCount })}
             </span>
           )}
         </div>
@@ -114,7 +116,7 @@ export default function FeedControls({
                   ? 'bg-white text-primary-600 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
               )}
-              title="网格视图"
+              title={t('feedControls.gridView')}
             >
               <Grid3X3 className="w-4 h-4" />
             </button>
@@ -126,7 +128,7 @@ export default function FeedControls({
                   ? 'bg-white text-primary-600 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
               )}
-              title="列表视图"
+              title={t('feedControls.listView')}
             >
               <List className="w-4 h-4" />
             </button>
@@ -135,7 +137,7 @@ export default function FeedControls({
           {/* 高级筛选按钮 */}
           <button className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors">
             <SlidersHorizontal className="w-4 h-4" />
-            <span className="text-sm">筛选</span>
+            <span className="text-sm">{t('feedControls.filter')}</span>
           </button>
         </div>
       </div>

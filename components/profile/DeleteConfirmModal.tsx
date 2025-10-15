@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { AlertTriangle, X } from 'lucide-react'
+import { useLanguage } from '@/components/i18n/LanguageProvider'
 
 interface DeleteConfirmModalProps {
   isOpen: boolean
@@ -19,6 +20,8 @@ export default function DeleteConfirmModal({
   onConfirm, 
   isDeleting = false 
 }: DeleteConfirmModalProps) {
+  const { t } = useLanguage();
+  
   if (!isOpen) return null
 
   return (
@@ -32,7 +35,7 @@ export default function DeleteConfirmModal({
             </div>
             <div className="ml-4">
               <h3 className="text-lg font-medium text-gray-900">
-                确认删除作品
+                {t('deleteConfirm.title')}
               </h3>
             </div>
             <button
@@ -47,20 +50,20 @@ export default function DeleteConfirmModal({
           {/* 内容 */}
           <div className="mb-6">
             <p className="text-sm text-gray-600 mb-2">
-              您即将删除作品：
+              {t('deleteConfirm.aboutToDelete')}
             </p>
             <p className="font-medium text-gray-900 bg-gray-50 px-3 py-2 rounded-md">
               "{modelTitle}"
             </p>
             <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
               <p className="text-sm text-red-800">
-                <strong>警告：</strong>此操作不可撤销！删除后将永久失去以下数据：
+                <strong>{t('deleteConfirm.warning')}</strong>{t('deleteConfirm.warningText')}
               </p>
               <ul className="mt-2 text-sm text-red-700 list-disc list-inside space-y-1">
-                <li>作品的所有图片和数据</li>
-                <li>所有点赞和收藏记录</li>
-                <li>所有评论和互动数据</li>
-                <li>作品的浏览统计信息</li>
+                <li>{t('deleteConfirm.dataLoss.images')}</li>
+                <li>{t('deleteConfirm.dataLoss.likes')}</li>
+                <li>{t('deleteConfirm.dataLoss.comments')}</li>
+                <li>{t('deleteConfirm.dataLoss.stats')}</li>
               </ul>
             </div>
           </div>
@@ -72,7 +75,7 @@ export default function DeleteConfirmModal({
               onClick={onClose}
               disabled={isDeleting}
             >
-              取消
+              {t('deleteConfirm.cancel')}
             </Button>
             <Button
               variant="default"
@@ -83,10 +86,10 @@ export default function DeleteConfirmModal({
               {isDeleting ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  删除中...
+                  {t('deleteConfirm.deleting')}
                 </>
               ) : (
-                '确认删除'
+                t('deleteConfirm.confirmDelete')
               )}
             </Button>
           </div>

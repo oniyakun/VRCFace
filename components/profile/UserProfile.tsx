@@ -10,6 +10,7 @@ import ModelDetailOverlay from '@/components/feed/ModelDetailOverlay'
 import EditModelModal from './EditModelModal'
 import DeleteConfirmModal from './DeleteConfirmModal'
 import { supabase } from '@/lib/supabase'
+import { useLanguage } from '@/components/i18n/LanguageProvider'
 
 interface UserProfileProps {
   userId: string
@@ -25,6 +26,7 @@ interface UserProfileData extends User {
 export default function UserProfile({ userId, isOwnProfile = false }: UserProfileProps) {
   const router = useRouter()
   const { showError } = useToast()
+  const { t } = useLanguage()
   const [user, setUser] = useState<UserProfileData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -62,7 +64,7 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
       const { data: { session } } = await supabase.auth.getSession()
       
       if (!session?.access_token) {
-        throw new Error('请先登录')
+        throw new Error(t('profile.loginFirst'))
       }
 
       const response = await fetch(`/api/models/${showDeleteConfirm}`, {
@@ -75,7 +77,7 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.message || '删除失败')
+        throw new Error(result.message || t('profile.deleteFailed'))
       }
 
       // 从列表中移除已删除的模型
@@ -87,7 +89,7 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
       setShowDeleteConfirm(null)
     } catch (error) {
       console.error('删除模型失败:', error)
-      showError(error instanceof Error ? error.message : '删除失败')
+      showError(error instanceof Error ? error.message : t('profile.deleteFailed'))
     } finally {
       setIsDeleting(false)
     }
@@ -134,11 +136,11 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
         }
       } else {
         console.error('获取收藏列表失败:', result.error)
-        showError(result.error || '获取收藏列表失败')
+        showError(result.error || t('profile.operationFailed'))
       }
     } catch (error) {
       console.error('Fetch favorites error:', error)
-      showError('网络错误，请稍后重试')
+      showError(t('profile.networkError'))
     } finally {
       setFavoritesLoading(false)
     }
@@ -180,11 +182,11 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
         console.log('UserProfile - User data set:', result.data.user)
       } else {
         console.error('UserProfile - API error:', result.error)
-        showError(result.error || '获取用户信息失败')
+        showError(result.error || t('profile.operationFailed'))
       }
     } catch (error) {
       console.error('Fetch user profile error:', error)
-      showError('网络错误，请稍后重试')
+      showError(t('profile.networkError'))
     } finally {
       setLoading(false)
     }
@@ -196,7 +198,7 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
     try {
       const token = localStorage.getItem('accessToken')
       if (!token) {
-        showError('请先登录')
+        showError(t('profile.loginFirst'))
         return
       }
 
@@ -222,11 +224,11 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
           }
         } : null)
       } else {
-        showError(result.error || '操作失败')
+        showError(result.error || t('profile.operationFailed'))
       }
     } catch (error) {
       console.error('Follow error:', error)
-      showError('网络错误，请稍后重试')
+      showError(t('profile.networkError'))
     }
   }
 
@@ -253,8 +255,8 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
   if (error || !user) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
-        <div className="text-red-500 text-lg mb-4">{error || '用户不存在'}</div>
-        <Button onClick={() => window.history.back()}>返回</Button>
+        <div className="text-red-500 text-lg mb-4">{error || t('profile.userNotFound')}</div>
+        <Button onClick={() => window.history.back()}>{t('profile.back')}</Button>
       </div>
     )
   }
@@ -287,7 +289,7 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
                   {user.displayName || user.username}
                   {user.isVerified && (
                     <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      已验证
+                      {t('profile.verified')}
                     </span>
                   )}
                 </h1>
@@ -296,7 +298,7 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
                   <p className="text-gray-700 mb-4">{user.bio}</p>
                 )}
                 <p className="text-sm text-gray-500">
-                  加入时间：{formatDate(user.createdAt.toString())}
+                  {t('profile.joinTime')}{formatDate(user.createdAt.toString())}
                 </p>
               </div>
 
@@ -304,14 +306,14 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
               <div className="flex gap-3 mt-4 md:mt-0">
                 {isOwnProfile ? (
                   <Button variant="outline" onClick={handleEditProfile}>
-                    编辑资料
+                    {t('profile.editProfile')}
                   </Button>
                 ) : (
                   <Button 
                     onClick={handleFollow}
                     variant={user.isFollowing ? "outline" : "default"}
                   >
-                    {user.isFollowing ? '取消关注' : '关注'}
+                    {user.isFollowing ? t('profile.unfollow') : t('profile.follow')}
                   </Button>
                 )}
               </div>
@@ -321,19 +323,19 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
             <div className="flex flex-wrap gap-6 text-sm">
               <div className="text-center">
                 <div className="font-bold text-lg text-gray-900">{user.stats.modelsCount}</div>
-                <div className="text-gray-600">作品</div>
+                <div className="text-gray-600">{t('profile.works')}</div>
               </div>
               <div className="text-center">
                 <div className="font-bold text-lg text-gray-900">{user.stats.followersCount}</div>
-                <div className="text-gray-600">粉丝</div>
+                <div className="text-gray-600">{t('profile.fans')}</div>
               </div>
               <div className="text-center">
                 <div className="font-bold text-lg text-gray-900">{user.stats.followingCount}</div>
-                <div className="text-gray-600">关注</div>
+                <div className="text-gray-600">{t('profile.following')}</div>
               </div>
               <div className="text-center">
                 <div className="font-bold text-lg text-gray-900">{user.stats.likesReceived}</div>
-                <div className="text-gray-600">获赞</div>
+                <div className="text-gray-600">{t('profile.likesReceived')}</div>
               </div>
             </div>
           </div>
@@ -345,10 +347,10 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
         <div className="border-b border-gray-200">
           <nav className="flex space-x-8 px-8">
             {[
-              { key: 'models', label: '作品' },
-              { key: 'favorites', label: '收藏' },
-              { key: 'followers', label: '粉丝' },
-              { key: 'following', label: '关注' }
+              { key: 'models', label: t('profile.tabs.models') },
+              { key: 'favorites', label: t('profile.tabs.favorites') },
+              { key: 'followers', label: t('profile.tabs.followers') },
+              { key: 'following', label: t('profile.tabs.following') }
             ].map((tab) => (
               <button
                 key={tab.key}
@@ -401,7 +403,7 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
                                   className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                                 >
                                   <Edit className="w-4 h-4" />
-                                  编辑
+                                  {t('profile.edit')}
                                 </button>
                                 <button
                                   onClick={(e) => {
@@ -412,7 +414,7 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
                                   className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
                                 >
                                   <Trash2 className="w-4 h-4" />
-                                  删除
+                                  {t('profile.delete')}
                                 </button>
                               </div>
                             )}
@@ -431,7 +433,7 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
                             className="w-full h-full object-cover rounded-lg"
                           />
                         ) : (
-                          <div className="text-gray-400">暂无预览</div>
+                          <div className="text-gray-400">{t('profile.noPreview')}</div>
                         )}
                       </div>
                       <div onClick={() => setSelectedModelId(model.id)} className="cursor-pointer">
@@ -440,14 +442,14 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
                           {/* 私人标签 */}
                           {!model.is_public && (
                             <span className="inline-flex items-center px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-md font-medium">
-                              私人
+                              {t('profile.private')}
                             </span>
                           )}
                         </div>
                         <p className="text-sm text-gray-600 mb-2">{model.description}</p>
                         <div className="flex justify-between text-xs text-gray-500">
-                          <span>{model.stats?.views || 0} 浏览</span>
-                          <span>{model.stats?.likes || 0} 点赞</span>
+                          <span>{model.stats?.views || 0} {t('profile.views')}</span>
+                          <span>{model.stats?.likes || 0} {t('profile.likes')}</span>
                         </div>
                       </div>
                     </div>
@@ -455,9 +457,9 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
                 </div>
               ) : (
                 <div className="text-center py-12">
-                  <div className="text-gray-400 text-lg mb-2">暂无作品</div>
+                  <div className="text-gray-400 text-lg mb-2">{t('profile.noWorks')}</div>
                   <p className="text-gray-500">
-                    {isOwnProfile ? '开始创建您的第一个作品吧！' : '该用户还没有发布作品'}
+                    {isOwnProfile ? t('profile.noWorksOwn') : t('profile.noWorksOther')}
                   </p>
                 </div>
               )}
@@ -468,13 +470,13 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
             <div>
               {/* 收藏标题 */}
               <div className="mb-6">
-                <h3 className="text-lg font-medium text-gray-900">收藏的作品</h3>
+                <h3 className="text-lg font-medium text-gray-900">{t('profile.favoriteWorks')}</h3>
               </div>
 
               {favoritesLoading && favoritesPage === 1 ? (
                 <div className="text-center py-12">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-                  <p className="text-gray-600">正在加载收藏...</p>
+                  <p className="text-gray-600">{t('profile.loadingFavorites')}</p>
                 </div>
               ) : user.favorites && user.favorites.length > 0 ? (
                 <div>
@@ -494,7 +496,7 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-gray-400">
-                              暂无预览
+                              {t('profile.noPreview')}
                             </div>
                           )}
                         </div>
@@ -516,7 +518,7 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
                               )}
                             </div>
                             <span className="text-sm text-gray-600">
-                              {model.author?.displayName || model.author?.username || '未知用户'}
+                              {model.author?.displayName || model.author?.username || t('profile.unknownUser')}
                             </span>
                           </div>
 
@@ -560,7 +562,7 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
 
                           {/* 收藏时间 */}
                           <div className="mt-2 text-xs text-gray-400">
-                            收藏于 {new Date(model.favorited_at).toLocaleDateString('zh-CN')}
+                            {t('profile.favoritedAt')} {new Date(model.favorited_at).toLocaleDateString('zh-CN')}
                           </div>
                         </div>
                       </div>
@@ -576,9 +578,9 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
                 </div>
               ) : (
                 <div className="text-center py-12">
-                  <div className="text-gray-400 text-lg mb-2">暂无收藏</div>
+                  <div className="text-gray-400 text-lg mb-2">{t('profile.noFavorites')}</div>
                   <p className="text-gray-500">
-                    {isOwnProfile ? '还没有收藏任何作品' : '该用户还没有收藏任何作品'}
+                    {isOwnProfile ? t('profile.noFavoritesOwn') : t('profile.noFavoritesOther')}
                   </p>
                 </div>
               )}
@@ -587,15 +589,15 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
 
           {activeTab === 'followers' && (
             <div className="text-center py-12">
-              <div className="text-gray-400 text-lg mb-2">粉丝列表</div>
-              <p className="text-gray-500">功能开发中...</p>
+              <div className="text-gray-400 text-lg mb-2">{t('profile.followersList')}</div>
+              <p className="text-gray-500">{t('profile.featureInDevelopment')}</p>
             </div>
           )}
 
           {activeTab === 'following' && (
             <div className="text-center py-12">
-              <div className="text-gray-400 text-lg mb-2">关注列表</div>
-              <p className="text-gray-500">功能开发中...</p>
+              <div className="text-gray-400 text-lg mb-2">{t('profile.followingList')}</div>
+              <p className="text-gray-500">{t('profile.featureInDevelopment')}</p>
             </div>
           )}
         </div>

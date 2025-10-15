@@ -4,10 +4,13 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { useAuth } from '@/components/auth/AuthProvider'
+import { useLanguage } from '@/components/i18n/LanguageProvider'
+import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher'
 import { Button } from '@/components/ui/button'
 
 export default function Navigation() {
   const { user, isAuthenticated, logout } = useAuth()
+  const { t } = useLanguage()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isVisible, setIsVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
@@ -99,19 +102,20 @@ export default function Navigation() {
                 href="/" 
                 className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
               >
-                首页
+                {t('nav.home')}
               </Link>
               <Link 
                 href="/docs" 
                 className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
               >
-                文档
+                {t('nav.docs')}
               </Link>
             </div>
           </div>
 
           {/* 用户菜单 */}
           <div className="flex items-center space-x-4">
+            <LanguageSwitcher />
             {isAuthenticated && user ? (
               <>
                 {/* 发帖按钮 */}
@@ -129,7 +133,7 @@ export default function Navigation() {
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     </svg>
-                    <span>发帖</span>
+                    <span>{t('nav.create')}</span>
                   </Button>
                 </Link>
                 
@@ -169,21 +173,21 @@ export default function Navigation() {
                        onClick={handleProfileClick}
                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                      >
-                       个人主页
+                       {t('nav.profile')}
                      </button>
                      <Link
                        href="/settings"
                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                        onClick={() => setIsMenuOpen(false)}
                      >
-                       设置
+                       {t('nav.settings')}
                      </Link>
                      <hr className="my-1" />
                      <button
                        onClick={handleLogout}
                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                      >
-                       退出登录
+                       {t('nav.logout')}
                      </button>
                    </div>
                  )}
@@ -193,7 +197,7 @@ export default function Navigation() {
               <div className="flex items-center space-x-3">
                 <Link href="/auth">
                   <Button variant="outline" size="sm">
-                    登录/注册
+                    {t('nav.loginRegister')}
                   </Button>
                 </Link>
               </div>

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/components/auth/AuthProvider'
+import { useLanguage } from '@/components/i18n/LanguageProvider'
 
 interface AuthFormProps {
   mode: 'login' | 'register'
@@ -19,6 +20,7 @@ interface FormData {
 }
 
 export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProps) {
+  const { t } = useLanguage()
   const [formData, setFormData] = useState<FormData>({
     email: '',
     password: '',
@@ -42,35 +44,35 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
 
   const validateForm = (): boolean => {
     if (!formData.email || !formData.password) {
-      showError('邮箱和密码为必填项')
+      showError(t('auth.validation.emailPasswordRequired'))
       return false
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(formData.email)) {
-      showError('邮箱格式不正确')
+      showError(t('auth.validation.invalidEmail'))
       return false
     }
 
     if (formData.password.length < 6) {
-      showError('密码长度至少为6位')
+      showError(t('auth.validation.passwordTooShort'))
       return false
     }
 
     if (mode === 'register') {
       if (!formData.username) {
-        showError('用户名为必填项')
+        showError(t('auth.validation.usernameRequired'))
         return false
       }
 
       const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/
       if (!usernameRegex.test(formData.username)) {
-        showError('用户名只能包含字母、数字和下划线，长度为3-20位')
+        showError(t('auth.validation.invalidUsername'))
         return false
       }
 
       if (formData.password !== formData.confirmPassword) {
-        showError('两次输入的密码不一致')
+        showError(t('auth.validation.passwordMismatch'))
         return false
       }
     }
@@ -93,10 +95,10 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
         const result = await login(formData.email, formData.password)
         
         if (result.success) {
-          setSuccess('登录成功')
+          setSuccess(t('auth.success.loginSuccess'))
           onSuccess?.(null) // 用户信息会通过 AuthProvider 自动更新
         } else {
-          showError(result.error || '登录失败，请稍后重试')
+          showError(result.error || t('auth.errors.loginFailed'))
           
           // 如果是登录失败且提示需要验证邮箱，显示重新发送按钮
           if (result.error?.includes('验证')) {
@@ -121,7 +123,7 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
         const result = await response.json()
 
         if (result.success) {
-          setSuccess(result.message || '注册成功')
+          setSuccess(result.message || t('auth.success.registerSuccess'))
           
           // 注册成功后切换到登录模式
           setTimeout(() => {
@@ -135,12 +137,12 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
             })
           }, 2000)
         } else {
-          showError(result.error || '注册失败，请稍后重试')
+          showError(result.error || t('auth.errors.registerFailed'))
         }
       }
     } catch (error) {
       // Auth error handled silently
-      showError('网络错误，请稍后重试')
+      showError(t('auth.errors.networkError'))
     } finally {
       setLoading(false)
     }
@@ -148,7 +150,7 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
 
   const handleResendConfirmation = async () => {
     if (!formData.email) {
-      showError('请输入邮箱地址')
+      showError(t('auth.errors.emailRequired'))
       return
     }
 
@@ -171,11 +173,11 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
         setSuccess(result.message)
         setShowResendButton(false)
       } else {
-        showError(result.error || '发送验证邮件失败')
+        showError(result.error || t('auth.errors.resendFailed'))
       }
     } catch (error) {
       // Resend confirmation error handled silently
-      showError('网络错误，请稍后重试')
+      showError(t('auth.errors.networkError'))
     } finally {
       setLoading(false)
     }
@@ -185,11 +187,11 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
     <div className="w-full max-w-md mx-auto">
       <div className="bg-white rounded-lg shadow-lg p-8">
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-gray-900">
-            {mode === 'login' ? '登录' : '注册'}
-          </h2>
-          <p className="text-gray-600 mt-2">
-            {mode === 'login' ? '欢迎回来！' : '创建您的账户'}
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            {mode === 'login' ? t('auth.welcome.loginTitle') : t('auth.welcome.registerTitle')}
+          </h1>
+          <p className="text-gray-600">
+            {mode === 'login' ? t('auth.welcome.loginSubtitle') : t('auth.welcome.registerSubtitle')}
           </p>
         </div>
 
@@ -198,7 +200,7 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
             <>
               <div>
                 <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
-                  用户名 *
+                  {t('auth.form.username')}
                 </label>
                 <input
                   type="text"
@@ -206,15 +208,15 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
                   name="username"
                   value={formData.username}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="请输入用户名"
-                  disabled={loading}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder={t('auth.form.usernamePlaceholder')}
+                  required
                 />
               </div>
 
               <div>
                 <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 mb-2">
-                  显示名称
+                  {t('auth.form.displayName')}
                 </label>
                 <input
                   type="text"
@@ -222,9 +224,24 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
                   name="displayName"
                   value={formData.displayName}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="请输入显示名称（可选）"
-                  disabled={loading}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder={t('auth.form.displayNamePlaceholder')}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                  {t('auth.form.confirmPassword')}
+                </label>
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder={t('auth.form.confirmPasswordPlaceholder')}
+                  required
                 />
               </div>
             </>
@@ -232,23 +249,23 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
 
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-              邮箱 *
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="请输入邮箱"
-              disabled={loading}
-            />
+                {t('auth.form.email')}
+              </label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder={t('auth.form.emailPlaceholder')}
+                required
+              />
           </div>
 
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-              密码 *
+              {t('auth.form.password')}
             </label>
             <input
               type="password"
@@ -256,9 +273,9 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
               name="password"
               value={formData.password}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="请输入密码"
-              disabled={loading}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder={t('auth.form.passwordPlaceholder')}
+              required
             />
             {mode === 'login' && (
               <div className="text-right mt-2">
@@ -266,29 +283,13 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
                   href="/auth/forgot-password"
                   className="text-sm text-blue-600 hover:text-blue-800"
                 >
-                  忘记密码？
+                  {t('auth.form.forgotPassword')}
                 </a>
               </div>
             )}
           </div>
 
-          {mode === 'register' && (
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                确认密码 *
-              </label>
-              <input
-                type="password"
-                id="confirmPassword"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="请再次输入密码"
-                disabled={loading}
-              />
-            </div>
-          )}
+
 
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
@@ -307,7 +308,7 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
             className="w-full"
             disabled={loading}
           >
-            {loading ? '处理中...' : (mode === 'login' ? '登录' : '注册')}
+            {loading ? t('auth.form.loading') : (mode === 'login' ? t('auth.form.loginButton') : t('auth.form.registerButton'))}
           </Button>
 
           {showResendButton && mode === 'login' && (
@@ -318,21 +319,21 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
               onClick={handleResendConfirmation}
               disabled={loading}
             >
-              重新发送验证邮件
+              {loading ? t('auth.form.loading') : t('auth.form.resendButton')}
             </Button>
           )}
         </form>
 
         <div className="mt-6 text-center">
           <p className="text-gray-600">
-            {mode === 'login' ? '还没有账户？' : '已有账户？'}
+            {mode === 'login' ? t('auth.form.noAccount') : t('auth.form.hasAccount')}
             <button
               type="button"
               onClick={() => onModeChange(mode === 'login' ? 'register' : 'login')}
               className="ml-1 text-blue-600 hover:text-blue-800 font-medium"
               disabled={loading}
             >
-              {mode === 'login' ? '立即注册' : '立即登录'}
+              {mode === 'login' ? t('auth.form.registerLink') : t('auth.form.loginLink')}
             </button>
           </p>
         </div>

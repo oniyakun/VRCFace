@@ -9,6 +9,7 @@ import { Upload, X, Plus, Tag, Image as ImageIcon, FileText, Code, User, Palette
 import { cn } from '@/lib/utils'
 import { compressImage, validateImageFile } from '@/lib/imageUtils'
 import { supabase } from '@/lib/supabase'
+import { useLanguage } from '@/components/i18n/LanguageProvider'
 
 interface Tag {
   id: string
@@ -29,6 +30,7 @@ interface FormData {
 
 
 export default function CreatePage() {
+  const { t } = useLanguage()
   const { user, isAuthenticated, isLoading } = useAuth()
   const { showSuccess, showError } = useToast()
   const router = useRouter()
@@ -82,7 +84,7 @@ export default function CreatePage() {
 
     // 检查总数量限制
     if (selectedImages.length + files.length > 5) {
-      showError('最多只能上传5张图片')
+      showError(t('create.maxImagesError'))
       return
     }
 
@@ -95,7 +97,7 @@ export default function CreatePage() {
         // 验证图片文件
         const validation = validateImageFile(file)
         if (!validation.valid) {
-          showError(validation.error || '图片文件无效')
+          showError(validation.error || t('create.invalidImageFile'))
           continue
         }
         
@@ -127,7 +129,7 @@ export default function CreatePage() {
         setError(null)
       }
     } catch (error) {
-      showError('图片处理失败，请重试')
+      showError(t('create.imageProcessFailed'))
     }
   }
 
@@ -182,7 +184,7 @@ export default function CreatePage() {
     )
     
     if (existingTag) {
-      showError('标签名称已存在')
+      showError(t('create.tagAlreadyExists'))
       return
     }
     
@@ -220,23 +222,23 @@ export default function CreatePage() {
   // 表单验证
   const validateForm = (): boolean => {
     if (!formData.title.trim()) {
-      showError('请输入标题')
+      showError(t('create.titleRequired'))
       return false
     }
     
     if (!formData.description.trim()) {
-      showError('请输入描述')
+      showError(t('create.descriptionRequired'))
       return false
     }
     
     if (selectedImages.length === 0) {
-      showError('请至少选择一张预览图片')
+      showError(t('create.imageRequired'))
       return false
     }
     
     // 如果有捏脸数据，则验证JSON格式
     if (formData.jsonData.trim() && !validateJsonData(formData.jsonData)) {
-      showError('捏脸数据格式不正确，请输入有效的JSON格式')
+      showError(t('create.invalidJsonFormat'))
       return false
     }
     
@@ -257,7 +259,7 @@ export default function CreatePage() {
       const { data: { session } } = await supabase.auth.getSession()
       
       if (!session?.access_token) {
-        showError('请先登录')
+        showError(t('auth.errors.loginRequired'))
         return
       }
       
@@ -321,16 +323,16 @@ export default function CreatePage() {
       
       if (response.ok) {
         const data = await response.json()
-        showSuccess('发布成功！正在跳转到您的个人主页...')
+        showSuccess(t('create.publishSuccess'))
         setTimeout(() => {
           router.push(`/profile/${user?.id}`)
         }, 2000)
       } else {
         const errorData = await response.json()
-        showError(errorData.message || '发布失败，请重试')
+        showError(errorData.message || t('create.publishFailed'))
       }
     } catch (error) {
-      showError('发布失败，请检查网络连接')
+      showError(t('create.networkError'))
     } finally {
       setIsSubmitting(false)
     }
@@ -341,7 +343,7 @@ export default function CreatePage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">加载中...</p>
+          <p className="text-gray-600">{t('common.loading')}</p>
         </div>
       </div>
     )
@@ -360,8 +362,8 @@ export default function CreatePage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">发布成功！</h2>
-          <p className="text-gray-600">正在跳转到您的个人主页...</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('create.publishSuccessTitle')}</h2>
+          <p className="text-gray-600">{t('create.redirectingToProfile')}</p>
         </div>
       </div>
     )
@@ -372,8 +374,8 @@ export default function CreatePage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h1 className="text-2xl font-bold text-gray-900">发布新模型</h1>
-            <p className="text-gray-600 mt-1">分享您的VRChat捏脸作品</p>
+            <h1 className="text-2xl font-bold text-gray-900">{t('create.publishNewModel')}</h1>
+            <p className="text-gray-600 mt-1">{t('create.shareYourWork')}</p>
           </div>
           
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
@@ -388,13 +390,13 @@ export default function CreatePage() {
             <div>
               <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
                 <FileText className="w-4 h-4 mr-2" />
-                标题 *
+                {t('create.form.title')} *
               </label>
               <input
                 type="text"
                 value={formData.title}
                 onChange={(e) => handleInputChange('title', e.target.value)}
-                placeholder="为您的模型起个好听的名字"
+                placeholder={t('create.form.titlePlaceholder')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 maxLength={200}
               />
@@ -403,12 +405,12 @@ export default function CreatePage() {
             {/* 描述 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                描述 *
+                {t('create.form.description')} *
               </label>
               <textarea
                 value={formData.description}
                 onChange={(e) => handleInputChange('description', e.target.value)}
-                placeholder="描述您的模型特点、风格或使用场景..."
+                placeholder={t('create.form.descriptionPlaceholder')}
                 rows={4}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                 maxLength={1000}
@@ -419,7 +421,7 @@ export default function CreatePage() {
             <div>
               <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
                 <ImageIcon className="w-4 h-4 mr-2" />
-                预览图片 * (最多5张)
+                {t('create.form.previewImages')} * ({t('create.form.maxImages')})
               </label>
               
               {/* 图片预览网格 */}
@@ -427,14 +429,14 @@ export default function CreatePage() {
                 <div className="mb-4">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm text-gray-600">
-                      已选择 {selectedImages.length} 张图片
+                      {t('create.form.selectedImages', { count: selectedImages.length })}
                     </span>
                     <button
                       type="button"
                       onClick={handleRemoveAllImages}
                       className="text-sm text-red-600 hover:text-red-800"
                     >
-                      清空所有
+                      {t('create.form.clearAll')}
                     </button>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -442,7 +444,7 @@ export default function CreatePage() {
                       <div key={index} className="relative group">
                         <img
                           src={preview}
-                          alt={`预览图 ${index + 1}`}
+                          alt={t('create.form.previewImageAlt', { index: index + 1 })}
                           className="w-full h-32 object-cover rounded-lg border border-gray-200"
                         />
                         <button
@@ -454,7 +456,7 @@ export default function CreatePage() {
                         </button>
                         {index === 0 && (
                           <div className="absolute bottom-1 left-1 bg-blue-500 text-white text-xs px-2 py-1 rounded">
-                            封面
+                            {t('create.form.cover')}
                           </div>
                         )}
                       </div>
@@ -471,9 +473,9 @@ export default function CreatePage() {
                 >
                   <Upload className="w-8 h-8 text-gray-400 mb-2" />
                   <p className="text-sm text-gray-600">
-                    {selectedImages.length === 0 ? '点击上传图片' : `继续添加图片 (${5 - selectedImages.length} 张剩余)`}
+                    {selectedImages.length === 0 ? t('create.form.clickToUpload') : t('create.form.continueAdding', { remaining: 5 - selectedImages.length })}
                   </p>
-                  <p className="text-xs text-gray-400 mt-1">支持 JPG, PNG 格式，可多选</p>
+                  <p className="text-xs text-gray-400 mt-1">{t('create.form.supportedFormats')}</p>
                 </div>
               )}
               
@@ -488,7 +490,7 @@ export default function CreatePage() {
               
               {selectedImages.length > 0 && (
                 <p className="text-xs text-gray-500 mt-2">
-                  第一张图片将作为封面显示
+                  {t('create.form.firstImageCover')}
                 </p>
               )}
             </div>
@@ -497,7 +499,7 @@ export default function CreatePage() {
             <div>
               <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
                 <Tag className="w-4 h-4 mr-2" />
-                标签
+                {t('create.form.tags')}
               </label>
               
               {/* 已选标签 */}
@@ -508,7 +510,7 @@ export default function CreatePage() {
                     <div className="mb-3">
                       <div className="flex items-center text-xs text-blue-600 font-medium mb-2">
                         <User className="w-3 h-3 mr-1" />
-                        模型名字
+                        {t('create.form.modelName')}
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {formData.tags
@@ -525,7 +527,7 @@ export default function CreatePage() {
                             >
                               <User className="w-3 h-3 mr-1" />
                               {tag.name}
-                              {tag.isNew && <span className="ml-1 text-xs">(新)</span>}
+                              {tag.isNew && <span className="ml-1 text-xs">({t('create.form.new')})</span>}
                               <button
                                 type="button"
                                 onClick={() => handleRemoveTag(tag.id)}
@@ -544,7 +546,7 @@ export default function CreatePage() {
                     <div className="mb-3">
                       <div className="flex items-center text-xs text-purple-600 font-medium mb-2">
                         <Palette className="w-3 h-3 mr-1" />
-                        模型风格
+                        {t('create.form.modelStyle')}
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {formData.tags
@@ -561,7 +563,7 @@ export default function CreatePage() {
                             >
                               <Palette className="w-3 h-3 mr-1" />
                               {tag.name}
-                              {tag.isNew && <span className="ml-1 text-xs">(新)</span>}
+                              {tag.isNew && <span className="ml-1 text-xs">({t('create.form.new')})</span>}
                               <button
                                 type="button"
                                 onClick={() => handleRemoveTag(tag.id)}
@@ -577,66 +579,42 @@ export default function CreatePage() {
                 </div>
               )}
               
-              {/* 可选标签 */}
-              <div className="mb-4">
-                <h4 className="text-sm font-medium text-gray-700 mb-2">选择标签</h4>
-                
-                {/* 模型名字标签 */}
-                {availableTags.filter(tag => tag.tag_type === 'model_name').length > 0 && (
-                  <div className="mb-3">
-                    <div className="flex items-center text-xs text-blue-600 font-medium mb-2">
-                      <User className="w-3 h-3 mr-1" />
-                      模型名字
-                    </div>
+              {/* 可选标签列表 */}
+              {availableTags.length > 0 && (
+                <div className="mb-4">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">{t('create.form.availableTags')}</h4>
+                  <div className="max-h-32 overflow-y-auto border border-gray-200 rounded-md p-3">
                     <div className="flex flex-wrap gap-2">
                       {availableTags
-                        .filter(tag => tag.tag_type === 'model_name' && !formData.tags.find(t => t.id === tag.id))
-                        .slice(0, 8)
+                        .filter(tag => !formData.tags.find(selected => selected.id === tag.id))
                         .map(tag => (
                           <button
                             key={tag.id}
                             type="button"
                             onClick={() => handleAddTag(tag)}
-                            className="inline-flex items-center px-3 py-1 text-sm border border-blue-300 rounded-full hover:bg-blue-50 transition-colors text-blue-700"
+                            className={cn(
+                              "inline-flex items-center px-2 py-1 rounded text-xs hover:opacity-80 transition-opacity",
+                              tag.tag_type === 'model_name' 
+                                ? "bg-blue-100 text-blue-800 hover:bg-blue-200"
+                                : "bg-purple-100 text-purple-800 hover:bg-purple-200"
+                            )}
                           >
-                            <User className="w-3 h-3 mr-1" />
+                            {tag.tag_type === 'model_name' ? (
+                              <User className="w-3 h-3 mr-1" />
+                            ) : (
+                              <Palette className="w-3 h-3 mr-1" />
+                            )}
                             {tag.name}
                           </button>
                         ))}
                     </div>
                   </div>
-                )}
-
-                {/* 模型风格标签 */}
-                {availableTags.filter(tag => tag.tag_type === 'model_style' || !tag.tag_type).length > 0 && (
-                  <div className="mb-3">
-                    <div className="flex items-center text-xs text-purple-600 font-medium mb-2">
-                      <Palette className="w-3 h-3 mr-1" />
-                      模型风格
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {availableTags
-                        .filter(tag => (tag.tag_type === 'model_style' || !tag.tag_type) && !formData.tags.find(t => t.id === tag.id))
-                        .slice(0, 8)
-                        .map(tag => (
-                          <button
-                            key={tag.id}
-                            type="button"
-                            onClick={() => handleAddTag(tag)}
-                            className="inline-flex items-center px-3 py-1 text-sm border border-purple-300 rounded-full hover:bg-purple-50 transition-colors text-purple-700"
-                          >
-                            <Palette className="w-3 h-3 mr-1" />
-                            {tag.name}
-                          </button>
-                        ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+                </div>
+              )}
               
-              {/* 新建标签 */}
+              {/* 创建新标签 */}
               <div className="border-t pt-4">
-                <h4 className="text-sm font-medium text-gray-700 mb-3">创建新标签</h4>
+                <h4 className="text-sm font-medium text-gray-600 mb-3">{t('create.form.createNewTag')}</h4>
                 
                 {/* 标签类型选择 */}
                 <div className="flex mb-3 bg-gray-100 rounded-lg p-1">
@@ -650,8 +628,8 @@ export default function CreatePage() {
                         : 'text-gray-600 hover:text-gray-900'
                     )}
                   >
-                    <User className="w-4 h-4 mr-1" />
-                    模型名字
+                    <User className="w-4 h-4 mr-2" />
+                    {t('create.form.modelName')}
                   </button>
                   <button
                     type="button"
@@ -663,79 +641,103 @@ export default function CreatePage() {
                         : 'text-gray-600 hover:text-gray-900'
                     )}
                   >
-                    <Palette className="w-4 h-4 mr-1" />
-                    模型风格
+                    <Palette className="w-4 h-4 mr-2" />
+                    {t('create.form.modelStyle')}
                   </button>
                 </div>
-
+                
                 <div className="flex gap-2">
                   <input
                     type="text"
                     value={newTagName}
                     onChange={(e) => setNewTagName(e.target.value)}
-                    placeholder={`创建新的${newTagType === 'model_name' ? '模型名字' : '模型风格'}标签`}
-                    className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    maxLength={20}
+                    placeholder={t('create.form.tagNamePlaceholder')}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleCreateNewTag())}
+                    maxLength={50}
                   />
                   <Button
                     type="button"
                     onClick={handleCreateNewTag}
                     disabled={!newTagName.trim()}
-                    className="px-4 py-2 text-sm"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Plus className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
             </div>
-            
+
             {/* 捏脸数据 */}
             <div>
               <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
                 <Code className="w-4 h-4 mr-2" />
-                捏脸数据 (JSON格式)
+                {t('create.form.faceData')} ({t('create.form.optional')})
               </label>
               <textarea
                 value={formData.jsonData}
                 onChange={(e) => handleInputChange('jsonData', e.target.value)}
-                placeholder="请粘贴VRChat的捏脸JSON数据（可选）..."
+                placeholder={t('create.form.faceDataPlaceholder')}
                 rows={8}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm resize-none"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none font-mono text-sm"
               />
+              <p className="text-xs text-gray-500 mt-1">{t('create.form.faceDataHint')}</p>
+            </div>
+
+            {/* 可见性设置 */}
+            <div>
+              <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                {t('create.form.visibility')}
+              </label>
+              <div className="flex items-center space-x-4">
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="visibility"
+                    checked={formData.isPublic}
+                    onChange={() => handleInputChange('isPublic', true)}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-700">{t('create.form.public')}</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="visibility"
+                    checked={!formData.isPublic}
+                    onChange={() => handleInputChange('isPublic', false)}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-700">{t('create.form.private')}</span>
+                </label>
+              </div>
               <p className="text-xs text-gray-500 mt-1">
-                可选项：如果提供，其他用户可以复制您的捏脸数据
+                {formData.isPublic ? t('create.form.publicHint') : t('create.form.privateHint')}
               </p>
             </div>
-            
-            {/* 公开设置 */}
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="isPublic"
-                checked={formData.isPublic}
-                onChange={(e) => handleInputChange('isPublic', e.target.checked)}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <label htmlFor="isPublic" className="ml-2 text-sm text-gray-700">
-                公开发布（其他用户可以查看和下载）
-              </label>
-            </div>
-            
+
             {/* 提交按钮 */}
-            <div className="flex justify-end pt-4 border-t border-gray-200">
-              <Button
+            <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+              <button
                 type="button"
                 onClick={() => router.back()}
-                className="mr-3 px-6 py-2 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
+                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
               >
-                取消
-              </Button>
+                {t('common.cancel')}
+              </button>
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+                className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
               >
-                {isSubmitting ? '发布中...' : '发布模型'}
+                {isSubmitting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                    {t('create.form.publishing')}
+                  </>
+                ) : (
+                  t('create.form.publish')
+                )}
               </Button>
             </div>
           </form>

@@ -5,10 +5,12 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { useToast } from '@/components/ui/ToastProvider'
 import { Button } from '@/components/ui/button'
+import { useLanguage } from '@/components/i18n/LanguageProvider'
 
 export default function SettingsPage() {
   const { user, isAuthenticated, isLoading, session } = useAuth()
   const { showSuccess, showError } = useToast()
+  const { t } = useLanguage()
   const router = useRouter()
   const [formData, setFormData] = useState({
     displayName: '',
@@ -55,13 +57,13 @@ export default function SettingsPage() {
       })
 
       if (response.ok) {
-        showSuccess('设置保存成功！')
+        showSuccess(t('settings.success.saveSuccess'))
       } else {
-        showError('保存失败，请稍后重试')
+        showError(t('settings.errors.saveFailed'))
       }
     } catch (error) {
       console.error('Save settings error:', error)
-      showError('保存失败，请稍后重试')
+      showError(t('settings.errors.saveFailed'))
     } finally {
       setIsSaving(false)
     }
@@ -72,7 +74,7 @@ export default function SettingsPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">加载中...</p>
+          <p className="mt-4 text-gray-600">{t('settings.loading')}</p>
         </div>
       </div>
     )
@@ -87,19 +89,19 @@ export default function SettingsPage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-lg shadow">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h1 className="text-2xl font-bold text-gray-900">账户设置</h1>
-            <p className="mt-1 text-sm text-gray-600">管理您的个人信息和偏好设置</p>
+            <h1 className="text-2xl font-bold text-gray-900">{t('settings.title')}</h1>
+            <p className="mt-1 text-sm text-gray-600">{t('settings.subtitle')}</p>
           </div>
 
           <div className="p-6 space-y-6">
             {/* 基本信息 */}
             <div>
-              <h2 className="text-lg font-medium text-gray-900 mb-4">基本信息</h2>
+              <h2 className="text-lg font-medium text-gray-900 mb-4">{t('settings.basicInfo.title')}</h2>
               
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
                   <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                    用户名
+                    {t('settings.basicInfo.username')}
                   </label>
                   <input
                     type="text"
@@ -108,12 +110,12 @@ export default function SettingsPage() {
                     disabled
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 text-gray-500 cursor-not-allowed"
                   />
-                  <p className="mt-1 text-xs text-gray-500">用户名不可修改</p>
+                  <p className="mt-1 text-xs text-gray-500">{t('settings.basicInfo.usernameNote')}</p>
                 </div>
 
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                    邮箱
+                    {t('settings.basicInfo.email')}
                   </label>
                   <input
                     type="email"
@@ -122,12 +124,12 @@ export default function SettingsPage() {
                     disabled
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 text-gray-500 cursor-not-allowed"
                   />
-                  <p className="mt-1 text-xs text-gray-500">邮箱不可修改</p>
+                  <p className="mt-1 text-xs text-gray-500">{t('settings.basicInfo.emailNote')}</p>
                 </div>
 
                 <div>
                   <label htmlFor="displayName" className="block text-sm font-medium text-gray-700">
-                    显示名称
+                    {t('settings.basicInfo.displayName')}
                   </label>
                   <input
                     type="text"
@@ -136,13 +138,13 @@ export default function SettingsPage() {
                     value={formData.displayName}
                     onChange={handleInputChange}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="输入您的显示名称"
+                    placeholder={t('settings.basicInfo.displayNamePlaceholder')}
                   />
                 </div>
 
                 <div>
                   <label htmlFor="avatar" className="block text-sm font-medium text-gray-700">
-                    头像URL
+                    {t('settings.basicInfo.avatar')}
                   </label>
                   <input
                     type="url"
@@ -151,14 +153,14 @@ export default function SettingsPage() {
                     value={formData.avatar}
                     onChange={handleInputChange}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="输入头像图片URL"
+                    placeholder={t('settings.basicInfo.avatarPlaceholder')}
                   />
                 </div>
               </div>
 
               <div className="mt-4">
                 <label htmlFor="bio" className="block text-sm font-medium text-gray-700">
-                  个人简介
+                  {t('settings.basicInfo.bio')}
                 </label>
                 <textarea
                   id="bio"
@@ -167,7 +169,7 @@ export default function SettingsPage() {
                   value={formData.bio}
                   onChange={handleInputChange}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="介绍一下您自己..."
+                  placeholder={t('settings.basicInfo.bioPlaceholder')}
                 />
               </div>
             </div>
@@ -179,7 +181,7 @@ export default function SettingsPage() {
                 disabled={isSaving}
                 className="px-6 py-2"
               >
-                {isSaving ? '保存中...' : '保存设置'}
+                {isSaving ? t('settings.form.saving') : t('settings.form.saveButton')}
               </Button>
             </div>
           </div>

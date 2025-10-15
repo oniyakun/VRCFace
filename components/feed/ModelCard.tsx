@@ -6,6 +6,7 @@ import { Heart, MessageCircle, Copy, Download, Eye, Calendar, User, Star, User a
 import { cn, formatRelativeTime } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/components/auth/AuthProvider'
+import { useLanguage } from '@/components/i18n/LanguageProvider'
 
 interface ModelCardProps {
   id: string
@@ -69,6 +70,7 @@ export default function ModelCard({
   const coverImage = images && images.length > 0 ? images[0] : thumbnail
   const { user } = useAuth()
   const router = useRouter()
+  const { t } = useLanguage()
 
   // 检查用户的点赞和收藏状态
   useEffect(() => {
@@ -213,7 +215,7 @@ export default function ModelCard({
               <div className="w-12 h-12 bg-primary-200 rounded-lg flex items-center justify-center mx-auto mb-2">
                 <Eye className="w-6 h-6 text-primary-600" />
               </div>
-              <p className="text-sm text-primary-600 font-medium">VRC 模型</p>
+              <p className="text-sm text-primary-600 font-medium">{t('modelCard.vrcModel')}</p>
             </div>
           </div>
         )}
@@ -260,7 +262,7 @@ export default function ModelCard({
             {/* 私人标签 */}
             {!is_public && (
               <span className="inline-flex items-center px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-md font-medium">
-                私人
+                {t('modelCard.private')}
               </span>
             )}
           </div>
@@ -277,7 +279,7 @@ export default function ModelCard({
               <div className="flex flex-wrap gap-1 mb-2">
                 <div className="flex items-center text-xs text-blue-600 font-medium mb-1 w-full">
                   <UserIcon className="w-3 h-3 mr-1" />
-                  模型名字
+                  {t('modelCard.modelName')}
                 </div>
                 {tags
                   .filter(tag => tag.tag_type === 'model_name')
@@ -304,7 +306,7 @@ export default function ModelCard({
               <div className="flex flex-wrap gap-1">
                 <div className="flex items-center text-xs text-purple-600 font-medium mb-1 w-full">
                   <Palette className="w-3 h-3 mr-1" />
-                  模型风格
+                  {t('modelCard.modelStyle')}
                 </div>
                 {tags
                   .filter(tag => tag.tag_type === 'model_style' || !tag.tag_type)
@@ -359,7 +361,7 @@ export default function ModelCard({
             </span>
             <span className="flex items-center">
               <Star className="w-4 h-4 mr-1" />
-              收藏
+              {t('modelCard.favorite')}
             </span>
           </div>
           

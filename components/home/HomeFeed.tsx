@@ -7,6 +7,7 @@ import WaterfallLayout from '@/components/feed/WaterfallLayout'
 import ModelCard from '@/components/feed/ModelCard'
 import ModelDetailOverlay from '@/components/feed/ModelDetailOverlay'
 import { getFaceModels, getTags } from '@/lib/supabase'
+import { useLanguage } from '@/components/i18n/LanguageProvider'
 
 // 真实数据接口定义
 interface HomeModel {
@@ -56,6 +57,7 @@ interface HomeTag {
 
 
 export default function HomeFeed() {
+  const { t } = useLanguage()
   const [models, setModels] = useState<HomeModel[]>([])
   const [tags, setTags] = useState<HomeTag[]>([])
   const [filteredModels, setFilteredModels] = useState<HomeModel[]>([])
@@ -223,10 +225,10 @@ export default function HomeFeed() {
         {/* 标题区域 */}
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            发现模型
+            {t('home.discoverModels')}
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            发现社区创作者们分享的捏脸数据，通过标签筛选找到最适合你的风格
+            {t('home.discoverDescription')}
           </p>
         </div>
 
@@ -269,7 +271,7 @@ export default function HomeFeed() {
               </div>
             ) : filteredModels.length === 0 ? (
               <div className="text-center py-16">
-                <p className="text-gray-500 text-lg">暂无符合条件的模型</p>
+                <p className="text-gray-500 text-lg">{t('home.noModelsFound')}</p>
               </div>
             ) : viewMode === 'grid' ? (
               <WaterfallLayout
@@ -281,7 +283,7 @@ export default function HomeFeed() {
                     title={model.title}
                     description={model.description}
                     author={{
-                      name: model.author?.display_name || model.author?.username || '未知作者',
+                      name: model.author?.display_name || model.author?.username || t('common.unknownAuthor'),
                       avatar: model.author?.avatar
                     }}
                     thumbnail={model.thumbnail}
@@ -311,7 +313,7 @@ export default function HomeFeed() {
                     title={model.title}
                     description={model.description}
                     author={{
-                      name: model.author?.display_name || model.author?.username || '未知作者',
+                      name: model.author?.display_name || model.author?.username || t('common.unknownAuthor'),
                       avatar: model.author?.avatar
                     }}
                     thumbnail={model.thumbnail}
