@@ -10,8 +10,7 @@ export default function HeroSection() {
   const { t } = useLanguage()
 
   const handleGithubClick = () => {
-    // 这里可以替换为实际的 GitHub 仓库地址
-    window.open('https://github.com', '_blank')
+    window.open('https://github.com/oniyakun/VRCFace', '_blank')
   }
 
   return (

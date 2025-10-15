@@ -490,9 +490,135 @@ export const ja = {
       saveFailed: '保存に失敗しました。後でもう一度お試しください'
     }
   },
+  // Documentation
+  docs: {
+    title: 'VRCFace ドキュメント',
+    subtitle: 'VRCFaceプラットフォームを使用してVRChatの顔データを共有・管理し、プラグインやタグフィルタリング機能を通じてお気に入りのモデルを簡単に見つける方法を学びましょう',
+    backToHome: 'ホームに戻る',
+    quickStart: {
+      title: 'クイックスタート',
+      description: '気に入ったモデルを見つけて、作者が顔データを提供している場合、以下の手順に従って顔データを自分のモデルにインポートできます',
+      viewTutorial: 'チュートリアルを見る'
+    },
+    blendshapes: {
+      title: 'BlendShapesのエクスポート方法',
+      description: 'Unityプラグインを通じてBlendShapesデータを素早くエクスポート・インポートする方法を学びましょう',
+      viewTutorial: 'チュートリアルを見る'
+    },
+    community: {
+      title: 'コミュニティガイドライン',
+      description: 'コミュニティルールと他のユーザーとの交流・協力方法を学びましょう',
+      viewRules: 'コミュニティルール'
+    },
+    api: {
+      title: 'API ドキュメント',
+      description: '開発者向けの完全なAPIインターフェースドキュメントとサンプルコード',
+      viewReference: 'API リファレンス'
+    },
+    moreContent: 'より詳細なドキュメント内容を作成中...',
+    stayTuned: 'ドキュメントは今後の開発ステップで段階的に改善されます。お楽しみに！',
+    backToDocs: 'ドキュメントに戻る',
+    tutorial: {
+      quickStart: {
+        title: 'クイックスタート',
+        subtitle: '気に入ったモデルを見つけて、作者が顔データを提供している場合、以下の手順に従って顔データを自分のモデルにインポートできます',
+        steps: {
+          step1: {
+            title: 'モデルの一致を確認',
+            description: 'ウェブサイト上のモデル名が自分のモデルと同じであることを確認してください'
+          },
+          step2: {
+            title: 'Unityプラグインをダウンロード',
+            description: 'GitHubリリースリンクから最新バージョンのunitypackageファイルをダウンロードしてください',
+            tip: '最新のunitypackageをダウンロードしてUnityにインポートしてください'
+          },
+          step3: {
+            title: 'BlendShape Extractorツールを開く',
+            description: 'メニューバーからOniya tools → BlendShape Extractorを見つけてください'
+          },
+          step4: {
+            title: 'インポートオブジェクトを設定',
+            description: '"Import blendshapes via json file"項目を見つけて、対応するblendshapesを含むgameobjectをドラッグしてください'
+          },
+          step5: {
+            title: '顔データをコピー',
+            description: 'モデル詳細ページを開き、右上の「顔データをコピー」ボタンをクリックしてください'
+          },
+          step6: {
+            title: 'Unityにデータを貼り付け',
+            description: 'Unityプラグインに戻り、「クリップボードから貼り付け」ボタンをクリックしてください'
+          },
+          step7: {
+            title: 'インポート完了',
+            description: 'インポートしたいblendshapesデータを選択し、「Import blendshape」ボタンを押してインポートを完了してください',
+            success: {
+              label: '成功！',
+              content: 'これでUnityでVRCFaceのブレンドシェイプデータを使用できます！'
+            }
+          }
+        }
+      },
+      blendshapes: {
+        title: 'BlendShapesのエクスポート方法',
+        subtitle: 'Unityプラグインを通じてBlendShapesデータを素早くエクスポート・インポートする方法を学びましょう',
+        steps: {
+          step1: {
+            title: 'Unityプラグインをダウンロード',
+            description: 'GitHubリリースリンクにアクセスして最新バージョンのunitypackageファイルをダウンロードしてください',
+            tip: '最新の機能と修正を確実に取得するため、最新のリリースバージョンを選択してダウンロードしてください。'
+          },
+          step2: {
+            title: 'Unityプロジェクトにインポート',
+            description: 'ダウンロードしたunitypackageファイルをUnityプロジェクトにインポートしてください',
+            steps: [
+              'UnityでプロジェクトOを開く',
+              'ダウンロードした.unitypackageファイルをダブルクリックするか、Assets → Import Package → Custom Packageからインポート',
+              'インポートダイアログで「Import」ボタンをクリック',
+              'インポート完了後、上部メニューバーでOniya tools → BlendShape Extractorを見つける'
+            ]
+          },
+          step3: {
+            title: 'BlendShape Extractorを使用',
+            description: 'ツールウィンドウを開いてBlendShapesデータをエクスポートしてください',
+            steps: [
+              'メニューバーでOniya tools → BlendShape Extractorをクリックしてツールウィンドウを開く',
+              'SkinnedMeshRendererコンポーネントを含むGameObjectをツールウィンドウの指定エリアにドラッグ',
+              'ツールが自動的に利用可能なすべてのBlendShapesを検出してリスト表示'
+            ]
+          },
+          step4: {
+            title: 'クリップボードにコピー',
+            description: 'エクスポートしたBlendShapesデータをクリップボードにコピーしてVRCFaceで使用してください',
+            steps: [
+              'ツールウィンドウの「クリップボードにコピー」ボタンをクリック',
+              'データがJSON形式でシステムクリップボードにコピーされます',
+              'VRCFace作成ページに移動してデータを貼り付けて新しいモデルを作成'
+            ],
+            success: 'これでこれらのBlendShapesデータを使用してVRCFaceでバーチャルアバターを作成・共有できます。'
+          }
+        },
+        faq: {
+          title: 'よくある質問',
+          q1: {
+            question: 'なぜGameObjectが認識されないのですか？',
+            answer: 'GameObjectにSkinnedMeshRendererコンポーネントが含まれており、そのコンポーネントにBlendShapesデータがあることを確認してください。'
+          },
+          q2: {
+            question: 'エクスポートされるデータの形式は何ですか？',
+            answer: 'ツールはすべてのBlendShapes名と重み情報を含む標準JSON形式でエクスポートし、VRCFaceプラットフォームと完全に互換性があります。'
+          },
+          q3: {
+            question: '複数のモデルを一括エクスポートできますか？',
+            answer: '現在、ツールは単一モデルのエクスポートをサポートしています。バッチ処理の場合は、各モデルを個別にエクスポートしてください。'
+          }
+        }
+      }
+    }
+  },
+
   ui: {
     scrollIndicator: {
-      scrollDown: '下にスクロール'
+      scrollDown: 'スクロールダウン'
     },
     waterfall: {
       layoutCalculating: 'レイアウト計算中...',

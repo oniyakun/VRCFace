@@ -493,6 +493,139 @@ export const zh = {
   },
 
   // UI 组件
+  // 文档
+  docs: {
+    title: 'VRCFace 使用文档',
+    subtitle: '了解如何使用 VRCFace 平台分享和管理你的 VRChat 捏脸数据，通过插件和标签筛选功能轻松找到心仪的模型',
+    backToHome: '返回首页',
+    quickStart: {
+      title: '快速开始',
+      description: '当您看到有喜欢的模型的时候，如果作者提供了捏脸数据，您可以按照以下步骤来把捏脸数据导入到自己的模型里',
+      viewTutorial: '查看教程'
+    },
+    blendshapes: {
+      title: '如何导出 BlendShapes',
+      description: '学会通过我们的 Unity 插件来快速导出和导入 BlendShapes 数据',
+      viewTutorial: '查看教程'
+    },
+    community: {
+      title: '社区指南',
+      description: '了解社区规则，学会与其他用户互动和协作',
+      viewRules: '社区规则'
+    },
+    api: {
+      title: 'API 文档',
+      description: '为开发者提供的完整 API 接口文档和示例代码',
+      viewReference: 'API 参考'
+    },
+    moreContent: '更多详细文档内容正在编写中...',
+    stayTuned: '文档将在后续开发步骤中逐步完善，敬请期待！',
+    backToDocs: '返回文档',
+    tutorial: {
+      quickStart: {
+        title: '快速开始',
+        subtitle: '当您看到有喜欢的模型的时候，如果作者提供了捏脸数据，您可以按照以下步骤来把捏脸数据导入到自己的模型里',
+        steps: {
+          step1: {
+            title: '确认模型匹配',
+            description: '确保网站上的模型名字和您自己的模型是同一个'
+          },
+          step2: {
+            title: '下载Unity插件',
+            description: '从 GitHub 的 release 链接，下载最新版本的 unitypackage 文件',
+            tip: {
+              label: '提示：',
+              content: '下载最新的unitypackage并导入unity'
+            }
+          },
+          step3: {
+            title: '打开BlendShape Extractor工具',
+            description: '从菜单栏找到 Oniya tools → BlendShape Extractor'
+          },
+          step4: {
+            title: '设置导入对象',
+            description: '找到"通过json文件导入blendshapes"项，并把含有对应blendshapes的gameobject拖入其中',
+            imageAlt: 'BlendShape Extractor 工具界面',
+            imageCaption: '在工具中设置导入对象'
+          },
+          step5: {
+            title: '复制捏脸数据',
+            description: '打开模型详情页，点击右上方的"复制捏脸数据"按钮',
+            imageAlt: '模型详情页面',
+            imageCaption: '点击复制捏脸数据按钮'
+          },
+          step6: {
+            title: '粘贴数据到Unity',
+            description: '回到unity插件内，点击"从剪贴板粘贴"按钮'
+          },
+          step7: {
+            title: '完成导入',
+            description: '选择你需要导入的blendshapes数据，按下"导入blendshape"按钮，完成导入',
+            success: {
+              label: '成功！',
+              content: '现在你可以在 Unity 中使用来自 VRCFace 的捏脸数据了！'
+            }
+          }
+        }
+      },
+      blendshapes: {
+        title: '如何导出 BlendShapes',
+        subtitle: '学会通过我们的 Unity 插件来快速导出和导入 BlendShapes 数据',
+        steps: {
+          step1: {
+            title: '下载 Unity 插件',
+            description: '访问 GitHub 的 release 链接，下载最新版本的 unitypackage 文件',
+            tip: '选择最新的 release 版本下载，确保获得最新功能和修复。'
+          },
+          step2: {
+            title: '导入 Unity 项目',
+            description: '将下载的 unitypackage 文件导入到你的 Unity 项目中',
+            steps: [
+              '在 Unity 中打开你的项目',
+              '双击下载的 .unitypackage 文件，或者通过 Assets → Import Package → Custom Package 导入',
+              '在导入对话框中点击 "Import" 按钮',
+              '导入完成后，在上方菜单栏找到 Oniya tools → BlendShape Extractor'
+            ]
+          },
+          step3: {
+            title: '使用 BlendShape Extractor',
+            description: '打开工具窗口并导出 BlendShapes 数据',
+            steps: [
+              '点击菜单栏中的 Oniya tools → BlendShape Extractor 打开工具窗口',
+              '将含有 SkinnedMeshRenderer 组件的 GameObject 拖入工具窗口的指定区域',
+              '工具会自动检测并列出所有可用的 BlendShapes'
+            ]
+          },
+          step4: {
+            title: '复制到剪贴板',
+            description: '将导出的 BlendShapes 数据复制到剪贴板，以便在 VRCFace 中使用',
+            steps: [
+              '在工具窗口中点击 "Copy to Clipboard" 按钮',
+              '数据将以 JSON 格式复制到系统剪贴板',
+              '前往 VRCFace 的创建页面，粘贴数据即可创建新的模型'
+            ],
+            success: '现在你可以在 VRCFace 中使用这些 BlendShapes 数据创建和分享你的虚拟形象了。'
+          }
+        },
+        faq: {
+          title: '常见问题',
+          q1: {
+            question: '为什么我的 GameObject 无法被识别？',
+            answer: '请确保你的 GameObject 包含 SkinnedMeshRenderer 组件，并且该组件上有 BlendShapes 数据。'
+          },
+          q2: {
+            question: '导出的数据格式是什么？',
+            answer: '工具导出的是标准的 JSON 格式，包含所有 BlendShapes 的名称和权重信息，完全兼容 VRCFace 平台。'
+          },
+          q3: {
+            question: '可以批量导出多个模型吗？',
+            answer: '目前工具支持单个模型导出，如需批量处理，请分别对每个模型进行导出操作。'
+          }
+        }
+      }
+    }
+  },
+
   ui: {
     scrollIndicator: {
       scrollDown: '向下滚动'

@@ -472,6 +472,132 @@ export const en = {
   },
 
   // UI Components
+  // Documentation
+  docs: {
+    title: 'VRCFace Documentation',
+    subtitle: 'Learn how to use the VRCFace platform to share and manage your VRChat face data, easily find your favorite models through plugins and tag filtering features',
+    backToHome: 'Back to Home',
+    quickStart: {
+      title: 'Quick Start',
+      description: 'When you see a model you like, if the author provides face data, you can follow these steps to import the face data into your own model',
+      viewTutorial: 'View Tutorial'
+    },
+    blendshapes: {
+      title: 'How to Export BlendShapes',
+      description: 'Learn to quickly export and import BlendShapes data through our Unity plugin',
+      viewTutorial: 'View Tutorial'
+    },
+    community: {
+      title: 'Community Guidelines',
+      description: 'Learn community rules and how to interact and collaborate with other users',
+      viewRules: 'Community Rules'
+    },
+    api: {
+      title: 'API Documentation',
+      description: 'Complete API interface documentation and sample code for developers',
+      viewReference: 'API Reference'
+    },
+    moreContent: 'More detailed documentation content is being written...',
+    stayTuned: 'Documentation will be gradually improved in subsequent development steps, stay tuned!',
+    backToDocs: 'Back to Docs',
+    tutorial: {
+      quickStart: {
+        title: 'Quick Start',
+        subtitle: 'When you see a model you like, if the author provides face data, you can follow these steps to import the face data into your own model',
+        steps: {
+          step1: {
+            title: 'Confirm Model Match',
+            description: 'Make sure the model name on the website is the same as your own model'
+          },
+          step2: {
+            title: 'Download Unity Plugin',
+            description: 'Download the latest version of the unitypackage file from the GitHub release link',
+            tip: 'Download the latest unitypackage and import it into Unity'
+          },
+          step3: {
+            title: 'Open BlendShape Extractor Tool',
+            description: 'Find Oniya tools → BlendShape Extractor from the menu bar'
+          },
+          step4: {
+            title: 'Set Import Object',
+            description: 'Find the "Import blendshapes via json file" item and drag the gameobject containing the corresponding blendshapes into it'
+          },
+          step5: {
+            title: 'Copy Face Data',
+            description: 'Open the model details page and click the "Copy Face Data" button in the upper right corner'
+          },
+          step6: {
+            title: 'Paste Data to Unity',
+            description: 'Return to the Unity plugin and click the "Paste from Clipboard" button'
+          },
+          step7: {
+            title: 'Complete Import',
+            description: 'Select the blendshapes data you need to import and press the "Import blendshape" button to complete the import',
+            success: {
+              label: 'Success!',
+              content: 'Now you can use the blendshape data from VRCFace in Unity!'
+            }
+          }
+        }
+      },
+      blendshapes: {
+        title: 'How to Export BlendShapes',
+        subtitle: 'Learn to quickly export and import BlendShapes data through our Unity plugin',
+        steps: {
+          step1: {
+            title: 'Download Unity Plugin',
+            description: 'Visit the GitHub release link and download the latest version of the unitypackage file',
+            tip: 'Choose the latest release version to download to ensure you get the latest features and fixes.'
+          },
+          step2: {
+            title: 'Import Unity Project',
+            description: 'Import the downloaded unitypackage file into your Unity project',
+            steps: [
+              'Open your project in Unity',
+              'Double-click the downloaded .unitypackage file, or import through Assets → Import Package → Custom Package',
+              'Click the "Import" button in the import dialog',
+              'After import is complete, find Oniya tools → BlendShape Extractor in the top menu bar'
+            ]
+          },
+          step3: {
+            title: 'Use BlendShape Extractor',
+            description: 'Open the tool window and export BlendShapes data',
+            steps: [
+              'Click Oniya tools → BlendShape Extractor in the menu bar to open the tool window',
+              'Drag the GameObject containing the SkinnedMeshRenderer component into the designated area of the tool window',
+              'The tool will automatically detect and list all available BlendShapes'
+            ]
+          },
+          step4: {
+            title: 'Copy to Clipboard',
+            description: 'Copy the exported BlendShapes data to the clipboard for use in VRCFace',
+            steps: [
+              'Click the "Copy to Clipboard" button in the tool window',
+              'The data will be copied to the system clipboard in JSON format',
+              'Go to the VRCFace creation page and paste the data to create a new model'
+            ],
+            success: 'Now you can use these BlendShapes data to create and share your virtual avatar in VRCFace.'
+          }
+        },
+        faq: {
+          title: 'Frequently Asked Questions',
+          q1: {
+            question: 'Why is my GameObject not recognized?',
+            answer: 'Please make sure your GameObject contains a SkinnedMeshRenderer component and that component has BlendShapes data.'
+          },
+          q2: {
+            question: 'What format is the exported data?',
+            answer: 'The tool exports standard JSON format containing all BlendShapes names and weight information, fully compatible with the VRCFace platform.'
+          },
+          q3: {
+            question: 'Can I batch export multiple models?',
+            answer: 'Currently the tool supports single model export. For batch processing, please export each model separately.'
+          }
+        }
+      }
+    }
+  },
+
   ui: {
     scrollIndicator: {
       scrollDown: 'Scroll Down'
