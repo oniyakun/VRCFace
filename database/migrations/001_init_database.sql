@@ -1,6 +1,6 @@
 -- VRCFace 数据库初始化脚本
--- 创建时间: 2024-01-01
--- 描述: 创建用户、模型、评论、标签等核心表
+-- 创建时间: 2025-01-14
+-- 描述: 完整的数据库结构初始化，包含所有核心表和功能
 
 -- 启用必要的扩展
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -38,6 +38,7 @@ CREATE TABLE tags (
     description TEXT,
     color VARCHAR(7), -- HEX 颜色代码
     category VARCHAR(20) DEFAULT 'emotion' CHECK (category IN ('emotion', 'style', 'character', 'technical')),
+    tag_type VARCHAR(20) DEFAULT 'model_style' CHECK (tag_type IN ('model_name', 'model_style')),
     usage_count INTEGER DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -49,13 +50,19 @@ CREATE TABLE face_models (
     description TEXT,
     author_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     thumbnail TEXT,
-    json_data JSONB NOT NULL,
+    images TEXT[] DEFAULT '{}',
+    json_data JSONB, -- 允许为空
     category VARCHAR(20) DEFAULT 'other' CHECK (category IN ('cute', 'cool', 'funny', 'gentle', 'sci-fi', 'animal', 'other')),
     is_public BOOLEAN DEFAULT TRUE,
     is_verified BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- 添加约束：images 数组最多包含5个元素
+ALTER TABLE face_models 
+ADD CONSTRAINT face_models_images_max_count 
+CHECK (array_length(images, 1) <= 5 OR images = '{}');
 
 -- 模型统计表
 CREATE TABLE model_stats (
@@ -150,6 +157,7 @@ CREATE INDEX idx_face_models_author_id ON face_models(author_id);
 CREATE INDEX idx_face_models_category ON face_models(category);
 CREATE INDEX idx_face_models_is_public ON face_models(is_public);
 CREATE INDEX idx_face_models_created_at ON face_models(created_at DESC);
+CREATE INDEX idx_face_models_images ON face_models USING GIN (images);
 CREATE INDEX idx_comments_model_id ON comments(model_id);
 CREATE INDEX idx_comments_author_id ON comments(author_id);
 CREATE INDEX idx_comments_parent_id ON comments(parent_id);
@@ -166,7 +174,7 @@ CREATE INDEX idx_model_tags_model_id ON model_tags(model_id);
 CREATE INDEX idx_model_tags_tag_id ON model_tags(tag_id);
 
 -- 全文搜索索引
-CREATE INDEX idx_face_models_search ON face_models USING gin(to_tsvector('english', title || ' ' || description));
+CREATE INDEX idx_face_models_search ON face_models USING gin(to_tsvector('english', title || ' ' || COALESCE(description, '')));
 CREATE INDEX idx_tags_search ON tags USING gin(to_tsvector('english', name || ' ' || COALESCE(description, '')));
 
 -- 创建触发器函数来自动更新 updated_at 字段
@@ -226,12 +234,7 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
--- 创建点赞统计触发器
-CREATE TRIGGER trigger_update_model_stats 
-    AFTER INSERT OR DELETE ON likes 
-    FOR EACH ROW EXECUTE FUNCTION update_model_stats();
-
--- 创建函数来自动更新评论统计
+-- 创建函数来自动更新评论统计数据
 CREATE OR REPLACE FUNCTION update_comment_stats()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -264,12 +267,7 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
--- 创建评论统计触发器
-CREATE TRIGGER trigger_update_comment_stats 
-    AFTER INSERT OR DELETE ON comments 
-    FOR EACH ROW EXECUTE FUNCTION update_comment_stats();
-
--- 创建函数来自动更新关注统计
+-- 创建函数来自动更新关注统计数据
 CREATE OR REPLACE FUNCTION update_follow_stats()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -302,11 +300,6 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
--- 创建关注统计触发器
-CREATE TRIGGER trigger_update_follow_stats 
-    AFTER INSERT OR DELETE ON follows 
-    FOR EACH ROW EXECUTE FUNCTION update_follow_stats();
-
 -- 创建函数来自动更新标签使用统计
 CREATE OR REPLACE FUNCTION update_tag_usage_stats()
 RETURNS TRIGGER AS $$
@@ -326,25 +319,33 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
--- 创建标签使用统计触发器
-CREATE TRIGGER trigger_update_tag_usage_stats 
-    AFTER INSERT OR DELETE ON model_tags 
-    FOR EACH ROW EXECUTE FUNCTION update_tag_usage_stats();
+-- 创建函数来自动更新用户模型数量统计
+CREATE OR REPLACE FUNCTION update_user_model_stats()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        UPDATE user_stats 
+        SET models_count = models_count + 1, updated_at = NOW()
+        WHERE user_id = NEW.author_id;
+        RETURN NEW;
+    ELSIF TG_OP = 'DELETE' THEN
+        UPDATE user_stats 
+        SET models_count = models_count - 1, updated_at = NOW()
+        WHERE user_id = OLD.author_id;
+        RETURN OLD;
+    END IF;
+    RETURN NULL;
+END;
+$$ language 'plpgsql';
 
--- 插入一些初始标签数据
-INSERT INTO tags (name, description, category, color) VALUES
-('可爱', '可爱风格的表情', 'emotion', '#FF69B4'),
-('酷炫', '酷炫风格的表情', 'emotion', '#1E90FF'),
-('搞笑', '搞笑风格的表情', 'emotion', '#FFD700'),
-('温柔', '温柔风格的表情', 'emotion', '#98FB98'),
-('科幻', '科幻风格的表情', 'style', '#9370DB'),
-('动物', '动物风格的表情', 'character', '#8B4513'),
-('经典', '经典风格的表情', 'style', '#696969'),
-('现代', '现代风格的表情', 'style', '#4169E1'),
-('卡通', '卡通风格的表情', 'style', '#FF6347'),
-('写实', '写实风格的表情', 'style', '#2F4F4F');
+-- 添加触发器
+CREATE TRIGGER likes_stats_trigger AFTER INSERT OR DELETE ON likes FOR EACH ROW EXECUTE FUNCTION update_model_stats();
+CREATE TRIGGER comments_stats_trigger AFTER INSERT OR DELETE ON comments FOR EACH ROW EXECUTE FUNCTION update_comment_stats();
+CREATE TRIGGER follows_stats_trigger AFTER INSERT OR DELETE ON follows FOR EACH ROW EXECUTE FUNCTION update_follow_stats();
+CREATE TRIGGER tag_usage_stats_trigger AFTER INSERT OR DELETE ON model_tags FOR EACH ROW EXECUTE FUNCTION update_tag_usage_stats();
+CREATE TRIGGER user_model_stats_trigger AFTER INSERT OR DELETE ON face_models FOR EACH ROW EXECUTE FUNCTION update_user_model_stats();
 
--- 创建 RLS (Row Level Security) 策略
+-- 启用行级安全策略 (RLS)
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE face_models ENABLE ROW LEVEL SECURITY;
 ALTER TABLE comments ENABLE ROW LEVEL SECURITY;
@@ -353,64 +354,46 @@ ALTER TABLE favorites ENABLE ROW LEVEL SECURITY;
 ALTER TABLE follows ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 
--- 用户表策略
-CREATE POLICY "Users basic info is viewable by everyone" ON users
-    FOR SELECT USING (true);
+-- 用户表的 RLS 策略
+CREATE POLICY "Users can view all profiles" ON users FOR SELECT USING (true);
+CREATE POLICY "Users can update own profile" ON users FOR UPDATE USING (auth.uid() = id);
 
-CREATE POLICY "Users can update own profile" ON users
-    FOR UPDATE USING (auth.uid() = id);
+-- 面部模型表的 RLS 策略
+CREATE POLICY "Anyone can view public models" ON face_models FOR SELECT USING (is_public = true);
+CREATE POLICY "Users can view own models" ON face_models FOR SELECT USING (auth.uid() = author_id);
+CREATE POLICY "Users can insert own models" ON face_models FOR INSERT WITH CHECK (auth.uid() = author_id);
+CREATE POLICY "Users can update own models" ON face_models FOR UPDATE USING (auth.uid() = author_id);
+CREATE POLICY "Users can delete own models" ON face_models FOR DELETE USING (auth.uid() = author_id);
 
-CREATE POLICY "Service role can insert users" ON users
-    FOR INSERT WITH CHECK (true);
+-- 评论表的 RLS 策略
+CREATE POLICY "Anyone can view comments on public models" ON comments FOR SELECT USING (
+    EXISTS (SELECT 1 FROM face_models WHERE id = comments.model_id AND is_public = true)
+);
+CREATE POLICY "Users can insert comments" ON comments FOR INSERT WITH CHECK (auth.uid() = author_id);
+CREATE POLICY "Users can update own comments" ON comments FOR UPDATE USING (auth.uid() = author_id);
+CREATE POLICY "Users can delete own comments" ON comments FOR DELETE USING (auth.uid() = author_id);
 
--- 用户可以查看所有公开的模型
-CREATE POLICY "Public models are viewable by everyone" ON face_models
-    FOR SELECT USING (is_public = true);
+-- 点赞表的 RLS 策略
+CREATE POLICY "Users can view likes on public content" ON likes FOR SELECT USING (
+    (model_id IS NOT NULL AND EXISTS (SELECT 1 FROM face_models WHERE id = likes.model_id AND is_public = true)) OR
+    (comment_id IS NOT NULL AND EXISTS (SELECT 1 FROM comments c JOIN face_models m ON c.model_id = m.id WHERE c.id = likes.comment_id AND m.is_public = true))
+);
+CREATE POLICY "Users can manage own likes" ON likes FOR ALL USING (auth.uid() = user_id);
 
--- 用户可以查看自己的所有模型
-CREATE POLICY "Users can view own models" ON face_models
-    FOR SELECT USING (auth.uid() = author_id);
+-- 收藏表的 RLS 策略
+CREATE POLICY "Users can view own favorites" ON favorites FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can manage own favorites" ON favorites FOR ALL USING (auth.uid() = user_id);
 
--- 用户可以创建模型
-CREATE POLICY "Users can create models" ON face_models
-    FOR INSERT WITH CHECK (auth.uid() = author_id);
+-- 关注表的 RLS 策略
+CREATE POLICY "Anyone can view follows" ON follows FOR SELECT USING (true);
+CREATE POLICY "Users can manage own follows" ON follows FOR ALL USING (auth.uid() = follower_id);
 
--- 用户可以更新自己的模型
-CREATE POLICY "Users can update own models" ON face_models
-    FOR UPDATE USING (auth.uid() = author_id);
+-- 通知表的 RLS 策略
+CREATE POLICY "Users can view own notifications" ON notifications FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can update own notifications" ON notifications FOR UPDATE USING (auth.uid() = user_id);
 
--- 用户可以删除自己的模型
-CREATE POLICY "Users can delete own models" ON face_models
-    FOR DELETE USING (auth.uid() = author_id);
-
--- 评论策略
-CREATE POLICY "Comments are viewable by everyone" ON comments
-    FOR SELECT USING (true);
-
-CREATE POLICY "Users can create comments" ON comments
-    FOR INSERT WITH CHECK (auth.uid() = author_id);
-
-CREATE POLICY "Users can update own comments" ON comments
-    FOR UPDATE USING (auth.uid() = author_id);
-
-CREATE POLICY "Users can delete own comments" ON comments
-    FOR DELETE USING (auth.uid() = author_id);
-
--- 点赞策略
-CREATE POLICY "Users can manage own likes" ON likes
-    FOR ALL USING (auth.uid() = user_id);
-
--- 收藏策略
-CREATE POLICY "Users can manage own favorites" ON favorites
-    FOR ALL USING (auth.uid() = user_id);
-
--- 关注策略
-CREATE POLICY "Users can manage own follows" ON follows
-    FOR ALL USING (auth.uid() = follower_id);
-
--- 通知策略
-CREATE POLICY "Users can view own notifications" ON notifications
-    FOR SELECT USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can update own notifications" ON notifications
-    FOR UPDATE USING (auth.uid() = user_id);
+-- 添加字段注释
+COMMENT ON COLUMN face_models.images IS '模型图片URL数组，最多5张，第一张为封面图';
+COMMENT ON COLUMN face_models.thumbnail IS '缩略图URL（保留用于向后兼容）';
+COMMENT ON COLUMN face_models.json_data IS '捏脸数据JSON格式，可选字段，允许为空';
+COMMENT ON COLUMN tags.tag_type IS '标签类型：model_name（模型名字）或 model_style（模型风格）';
