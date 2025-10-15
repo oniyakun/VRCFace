@@ -6,7 +6,11 @@ VRCFace是一个免费的公开的用于给VRChat玩家分享自己捏脸数据�
 
 - **前端**: Next.js 14 (App Router) + TypeScript + TailwindCSS
 - **后端**: Supabase (数据库 + 认证 + 存储)
-- **部署**: Vercel
+- **部署**: Vercel (自动部署已配置)
+
+## 部署状态
+
+项目已连接到Vercel，每次推送到GitHub都会自动部署。
 
 ## 开发环境设置
 
