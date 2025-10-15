@@ -17,26 +17,61 @@ export default function ResetPasswordPage() {
   const searchParams = useSearchParams()
 
   useEffect(() => {
-    // Supabase的密码重置链接格式通常是 #access_token=xxx&refresh_token=xxx&type=recovery
-    // 我们需要从URL的hash部分获取参数
-    const hash = window.location.hash.substring(1) // 移除 # 号
-    const params = new URLSearchParams(hash)
-    
-    const accessToken = params.get('access_token')
-    const refreshToken = params.get('refresh_token')
-    const type = params.get('type')
-    
-    console.log('URL hash:', hash)
-    console.log('Access token:', accessToken)
-    console.log('Refresh token:', refreshToken)
-    console.log('Type:', type)
-    
-    if (!accessToken || !refreshToken || type !== 'recovery') {
-      showError('无效的重置链接或链接已过期')
-      return
+    // 检查URL参数的多种可能格式
+    const checkUrlParams = () => {
+      // 方法1: 检查hash参数 (#access_token=xxx&refresh_token=xxx&type=recovery)
+      const hash = window.location.hash.substring(1)
+      if (hash) {
+        const hashParams = new URLSearchParams(hash)
+        const accessToken = hashParams.get('access_token')
+        const refreshToken = hashParams.get('refresh_token')
+        const type = hashParams.get('type')
+        
+        console.log('检查Hash参数:', { hash, accessToken: !!accessToken, refreshToken: !!refreshToken, type })
+        
+        if (accessToken && refreshToken && type === 'recovery') {
+          setTokens({ accessToken, refreshToken })
+          return true
+        }
+      }
+      
+      // 方法2: 检查查询参数 (?access_token=xxx&refresh_token=xxx&type=recovery)
+      const searchParams = new URLSearchParams(window.location.search)
+      const accessToken = searchParams.get('access_token')
+      const refreshToken = searchParams.get('refresh_token')
+      const type = searchParams.get('type')
+      
+      console.log('检查查询参数:', { 
+        search: window.location.search, 
+        accessToken: !!accessToken, 
+        refreshToken: !!refreshToken, 
+        type 
+      })
+      
+      if (accessToken && refreshToken && type === 'recovery') {
+        setTokens({ accessToken, refreshToken })
+        return true
+      }
+      
+      return false
     }
-
-    setTokens({ accessToken, refreshToken })
+    
+    // 延迟检查，确保页面完全加载
+    const timer = setTimeout(() => {
+      const hasValidParams = checkUrlParams()
+      
+      if (!hasValidParams) {
+        console.log('完整URL信息:', {
+          href: window.location.href,
+          pathname: window.location.pathname,
+          search: window.location.search,
+          hash: window.location.hash
+        })
+        showError('无效的重置链接或链接已过期。请重新申请密码重置。')
+      }
+    }, 100)
+    
+    return () => clearTimeout(timer)
   }, [])
 
   const validateForm = (): boolean => {

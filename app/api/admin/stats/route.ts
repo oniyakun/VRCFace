@@ -128,7 +128,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 为活跃用户添加统计信息
-    let usersWithStats = []
+    let usersWithStats: any[] = []
     if (activeUsers) {
       for (const user of activeUsers) {
         // 获取用户的模型数量
