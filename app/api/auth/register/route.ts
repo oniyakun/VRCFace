@@ -80,7 +80,8 @@ export async function POST(request: NextRequest) {
         data: {
           username,
           display_name: displayName || username
-        }
+        },
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth?verified=true`
       }
     })
 
