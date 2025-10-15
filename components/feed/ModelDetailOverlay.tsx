@@ -6,6 +6,7 @@ import { Calendar, User, Eye, Download, Heart, MessageCircle, X, Image as ImageI
 import { cn } from '@/lib/utils'
 import ImageLightbox from '@/components/ui/ImageLightbox'
 import { useLanguage } from '@/components/i18n/LanguageProvider'
+import CommentSection from '@/components/comments/CommentSection'
 
 interface ModelDetailOverlayProps {
   id: string
@@ -316,6 +317,9 @@ export default function ModelDetailOverlay({ id, onClose, className = '' }: Mode
               )}
             </div>
           )}
+
+          {/* 评论区域 */}
+          <CommentSection modelId={id} />
         </div>
       </div>
 

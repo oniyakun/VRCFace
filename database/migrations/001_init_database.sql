@@ -98,6 +98,7 @@ CREATE TABLE comments (
     author_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     model_id UUID NOT NULL REFERENCES face_models(id) ON DELETE CASCADE,
     parent_id UUID REFERENCES comments(id) ON DELETE CASCADE,
+    reply_count INTEGER DEFAULT 0,
     is_edited BOOLEAN DEFAULT FALSE,
     likes INTEGER DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -267,6 +268,31 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+-- 创建更新回复计数的函数
+CREATE OR REPLACE FUNCTION update_reply_count()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        -- 当插入新回复时，增加父评论的回复计数
+        IF NEW.parent_id IS NOT NULL THEN
+            UPDATE comments 
+            SET reply_count = reply_count + 1 
+            WHERE id = NEW.parent_id;
+        END IF;
+        RETURN NEW;
+    ELSIF TG_OP = 'DELETE' THEN
+        -- 当删除回复时，减少父评论的回复计数
+        IF OLD.parent_id IS NOT NULL THEN
+            UPDATE comments 
+            SET reply_count = GREATEST(reply_count - 1, 0) 
+            WHERE id = OLD.parent_id;
+        END IF;
+        RETURN OLD;
+    END IF;
+    RETURN NULL;
+END;
+$$ language 'plpgsql';
+
 -- 创建函数来自动更新关注统计数据
 CREATE OR REPLACE FUNCTION update_follow_stats()
 RETURNS TRIGGER AS $$
@@ -341,6 +367,7 @@ $$ language 'plpgsql';
 -- 添加触发器
 CREATE TRIGGER likes_stats_trigger AFTER INSERT OR DELETE ON likes FOR EACH ROW EXECUTE FUNCTION update_model_stats();
 CREATE TRIGGER comments_stats_trigger AFTER INSERT OR DELETE ON comments FOR EACH ROW EXECUTE FUNCTION update_comment_stats();
+CREATE TRIGGER reply_count_trigger AFTER INSERT OR DELETE ON comments FOR EACH ROW EXECUTE FUNCTION update_reply_count();
 CREATE TRIGGER follows_stats_trigger AFTER INSERT OR DELETE ON follows FOR EACH ROW EXECUTE FUNCTION update_follow_stats();
 CREATE TRIGGER tag_usage_stats_trigger AFTER INSERT OR DELETE ON model_tags FOR EACH ROW EXECUTE FUNCTION update_tag_usage_stats();
 CREATE TRIGGER user_model_stats_trigger AFTER INSERT OR DELETE ON face_models FOR EACH ROW EXECUTE FUNCTION update_user_model_stats();

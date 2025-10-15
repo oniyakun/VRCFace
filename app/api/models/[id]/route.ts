@@ -533,31 +533,37 @@ export async function DELETE(
     }
 
     // 删除相关数据（级联删除）
-    // 1. 删除模型标签关联
+    // 1. 删除模型相关的评论（包括所有回复）
+    await supabaseAdmin
+      .from('comments')
+      .delete()
+      .eq('model_id', modelId)
+
+    // 2. 删除模型标签关联
     await supabaseAdmin
       .from('model_tags')
       .delete()
       .eq('model_id', modelId)
 
-    // 2. 删除模型统计数据
+    // 3. 删除模型统计数据
     await supabaseAdmin
       .from('model_stats')
       .delete()
       .eq('model_id', modelId)
 
-    // 3. 删除收藏记录
+    // 4. 删除收藏记录
     await supabaseAdmin
-      .from('user_favorites')
+      .from('favorites')
       .delete()
       .eq('model_id', modelId)
 
-    // 4. 删除点赞记录
+    // 5. 删除点赞记录
     await supabaseAdmin
-      .from('user_likes')
+      .from('likes')
       .delete()
       .eq('model_id', modelId)
 
-    // 5. 删除模型本身
+    // 6. 删除模型本身
     const { error: deleteError } = await supabaseAdmin
       .from('face_models')
       .delete()
@@ -571,7 +577,7 @@ export async function DELETE(
       }, { status: 500 })
     }
 
-    // 6. 删除存储中的图片文件
+    // 7. 删除存储中的图片文件
     try {
       // 删除主图片
       if (existingModel.images && Array.isArray(existingModel.images)) {
