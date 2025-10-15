@@ -186,14 +186,7 @@ export default function HomeFeed() {
     // 排序
     switch (sortBy) {
       case 'trending':
-        filtered.sort((a, b) => {
-          const aScore = (a.stats?.views || 0) + (a.stats?.likes || 0)
-          const bScore = (b.stats?.views || 0) + (b.stats?.likes || 0)
-          return bScore - aScore
-        })
-        break
-      case 'popular':
-        filtered.sort((a, b) => (b.stats?.downloads || 0) - (a.stats?.downloads || 0))
+        filtered.sort((a, b) => (b.stats?.views || 0) - (a.stats?.views || 0))
         break
       case 'most_liked':
         filtered.sort((a, b) => (b.stats?.likes || 0) - (a.stats?.likes || 0))

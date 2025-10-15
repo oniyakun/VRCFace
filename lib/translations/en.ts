@@ -301,7 +301,6 @@ export const en = {
     sortOptions: {
       latest: 'Latest',
       trending: 'Trending',
-      popular: 'Most Popular',
       mostLiked: 'Most Liked'
     }
   },

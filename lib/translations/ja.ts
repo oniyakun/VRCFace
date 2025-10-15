@@ -320,7 +320,6 @@ export const ja = {
     sortOptions: {
       latest: '最新発布',
       trending: '人気トレンド',
-      popular: '最も人気',
       mostLiked: '最多いいね'
     }
   },

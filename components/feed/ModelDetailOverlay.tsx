@@ -32,6 +32,8 @@ export default function ModelDetailOverlay({ id, onClose, className = '' }: Mode
           showError(result.error)
         } else if (result.data) {
           setModel(result.data)
+          // 增加浏览量
+          await incrementViewCount(id)
         } else {
           showError(t('modelCard.modelNotFound'))
         }
@@ -45,6 +47,25 @@ export default function ModelDetailOverlay({ id, onClose, className = '' }: Mode
 
     fetchModel()
   }, [id])
+
+  // 增加浏览量的函数
+  const incrementViewCount = async (modelId: string) => {
+    try {
+      const response = await fetch(`/api/models/${modelId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ action: 'increment_view' }),
+      })
+
+      if (!response.ok) {
+        console.warn('增加浏览量失败:', response.statusText)
+      }
+    } catch (error) {
+      console.warn('增加浏览量失败:', error)
+    }
+  }
 
   useEffect(() => {
     // 延迟显示动画

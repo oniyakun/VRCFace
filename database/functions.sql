@@ -104,3 +104,19 @@ BEGIN
     WHERE user_stats.user_id = decrement_likes_received.user_id;
 END;
 $$ LANGUAGE plpgsql;
+
+-- 增加模型浏览量
+CREATE OR REPLACE FUNCTION increment_model_views(model_id UUID)
+RETURNS void AS $$
+BEGIN
+    UPDATE model_stats 
+    SET views = views + 1, updated_at = NOW()
+    WHERE model_stats.model_id = increment_model_views.model_id;
+    
+    -- 如果模型统计记录不存在，则创建一个
+    IF NOT FOUND THEN
+        INSERT INTO model_stats (model_id, views, downloads, likes, comments)
+        VALUES (increment_model_views.model_id, 1, 0, 0, 0);
+    END IF;
+END;
+$$ LANGUAGE plpgsql;

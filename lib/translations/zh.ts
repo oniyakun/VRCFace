@@ -208,7 +208,6 @@ export const zh = {
     sortOptions: {
       latest: '最新发布',
       trending: '热门趋势',
-      popular: '最受欢迎',
       mostLiked: '最多点赞'
     }
   },

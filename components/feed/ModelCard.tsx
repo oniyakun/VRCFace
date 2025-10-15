@@ -65,12 +65,18 @@ export default function ModelCard({
   const [imageError, setImageError] = useState(false)
   const [imageLoading, setImageLoading] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
+  const [localStats, setLocalStats] = useState(stats)
   
   // 获取封面图片：优先使用images的第一张，否则使用thumbnail
   const coverImage = images && images.length > 0 ? images[0] : thumbnail
   const { user } = useAuth()
   const router = useRouter()
   const { t } = useLanguage()
+
+  // 当props中的stats更新时，同步更新localStats
+  useEffect(() => {
+    setLocalStats(stats)
+  }, [stats])
 
   // 检查用户的点赞和收藏状态
   useEffect(() => {
@@ -122,7 +128,19 @@ export default function ModelCard({
 
       if (response.ok) {
         const data = await response.json()
-        setIsLiked(data.action === 'liked')
+        const newIsLiked = data.action === 'liked'
+        setIsLiked(newIsLiked)
+        
+        // 更新本地统计数据
+        setLocalStats(prev => ({
+          likes: newIsLiked 
+            ? (prev?.likes || 0) + 1 
+            : Math.max((prev?.likes || 0) - 1, 0),
+          comments: prev?.comments || 0,
+          downloads: prev?.downloads || 0,
+          views: prev?.views || 0
+        }))
+        
         onLike?.(id)
       }
     } catch (error) {
@@ -371,7 +389,7 @@ export default function ModelCard({
               className="flex items-center space-x-1 text-gray-600 hover:text-primary-600 transition-colors"
             >
               <MessageCircle className="w-4 h-4" />
-              <span className="text-sm">{stats?.comments || 0}</span>
+              <span className="text-sm">{localStats?.comments || 0}</span>
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); handleLike() }}
@@ -382,7 +400,7 @@ export default function ModelCard({
               )}
             >
               <Heart className={cn('w-4 h-4', isLiked && 'fill-current')} />
-              <span className="text-sm">{(stats?.likes || 0) + (isLiked ? 1 : 0)}</span>
+              <span className="text-sm">{localStats?.likes || 0}</span>
             </button>
           </div>
         </div>

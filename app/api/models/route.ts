@@ -335,15 +335,11 @@ export async function GET(request: NextRequest) {
 
     // 排序
     switch (sortBy) {
-      case 'popular':
+      case 'trending':
         query = query.order('views', { ascending: false, foreignTable: 'model_stats' })
         break
       case 'most_liked':
         query = query.order('likes', { ascending: false, foreignTable: 'model_stats' })
-        break
-      case 'trending':
-        // 简单的趋势算法：最近7天的点赞数 + 浏览数
-        query = query.order('created_at', { ascending: false })
         break
       default: // latest
         query = query.order('created_at', { ascending: false })

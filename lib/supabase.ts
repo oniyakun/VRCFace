@@ -23,7 +23,7 @@ export async function getFaceModels(page = 1, limit = 12, filters?: {
   category?: string
   tags?: string[]
   search?: string
-  sortBy?: 'latest' | 'popular' | 'trending' | 'most_liked'
+  sortBy?: 'latest' | 'trending' | 'most_liked'
 }) {
   try {
     let query = supabase
@@ -47,14 +47,13 @@ export async function getFaceModels(page = 1, limit = 12, filters?: {
 
     // 应用排序
     switch (filters?.sortBy) {
-      case 'popular':
-        query = query.order('created_at', { ascending: false }) // 暂时按创建时间排序
-        break
       case 'trending':
-        query = query.order('created_at', { ascending: false }) // 暂时按创建时间排序
+        // 按浏览量降序排序，没有统计数据的排在后面
+        query = query.order('created_at', { ascending: false }) // 先按创建时间排序作为基础
         break
       case 'most_liked':
-        query = query.order('created_at', { ascending: false }) // 暂时按创建时间排序
+        // 按点赞数降序排序
+        query = query.order('created_at', { ascending: false }) // 先按创建时间排序作为基础
         break
       case 'latest':
       default:

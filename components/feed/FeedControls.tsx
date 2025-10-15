@@ -5,7 +5,7 @@ import { ChevronDown, Grid3X3, List, Search, SlidersHorizontal, TrendingUp, Cloc
 import { cn } from '@/lib/utils'
 import { useLanguage } from '@/components/i18n/LanguageProvider'
 
-export type SortOption = 'latest' | 'popular' | 'trending' | 'most_liked'
+export type SortOption = 'latest' | 'trending' | 'most_liked'
 export type ViewMode = 'grid' | 'list'
 
 interface FeedControlsProps {
@@ -35,7 +35,6 @@ export default function FeedControls({
   const sortOptions = [
     { value: 'latest' as SortOption, label: t('feedControls.sortOptions.latest'), icon: Clock },
     { value: 'trending' as SortOption, label: t('feedControls.sortOptions.trending'), icon: TrendingUp },
-    { value: 'popular' as SortOption, label: t('feedControls.sortOptions.popular'), icon: Heart },
     { value: 'most_liked' as SortOption, label: t('feedControls.sortOptions.mostLiked'), icon: Heart }
   ]
 

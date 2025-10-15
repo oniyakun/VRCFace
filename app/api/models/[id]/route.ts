@@ -69,6 +69,116 @@ export async function GET(
   }
 }
 
+// 增加浏览量
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const modelId = params.id
+    const body = await request.json()
+    const { action } = body
+
+    if (action === 'increment_view') {
+      // 检查模型是否存在且为公开状态
+      const { data: model, error: modelError } = await supabaseAdmin
+        .from('face_models')
+        .select('id, is_public')
+        .eq('id', modelId)
+        .single()
+
+      if (modelError || !model) {
+        return NextResponse.json<ApiResponse<null>>({
+          success: false,
+          message: '模型不存在'
+        }, { status: 404 })
+      }
+
+      if (!model.is_public) {
+        return NextResponse.json<ApiResponse<null>>({
+          success: false,
+          message: '私有模型无法统计浏览量'
+        }, { status: 403 })
+      }
+
+      // 检查是否已存在统计记录
+      const { data: existingStats } = await supabaseAdmin
+        .from('model_stats')
+        .select('model_id')
+        .eq('model_id', modelId)
+        .single()
+
+      if (existingStats) {
+        // 更新现有统计记录 - 使用 rpc 调用 SQL 函数
+        const { error: updateError } = await supabaseAdmin
+          .rpc('increment_views', { model_id: modelId })
+
+        if (updateError) {
+          // 如果 rpc 调用失败，尝试直接更新
+          const { data: currentStats } = await supabaseAdmin
+            .from('model_stats')
+            .select('views')
+            .eq('model_id', modelId)
+            .single()
+
+          const newViews = (currentStats?.views || 0) + 1
+          const { error: directUpdateError } = await supabaseAdmin
+            .from('model_stats')
+            .update({ 
+              views: newViews,
+              updated_at: new Date().toISOString()
+            })
+            .eq('model_id', modelId)
+
+          if (directUpdateError) {
+            console.error('更新浏览量失败:', directUpdateError)
+            return NextResponse.json<ApiResponse<null>>({
+              success: false,
+              message: '更新浏览量失败'
+            }, { status: 500 })
+          }
+        }
+      } else {
+        // 创建新的统计记录
+        const { error: insertError } = await supabaseAdmin
+          .from('model_stats')
+          .insert({
+            model_id: modelId,
+            views: 1,
+            downloads: 0,
+            likes: 0,
+            comments: 0
+          })
+
+        if (insertError) {
+          console.error('创建统计记录失败:', insertError)
+          return NextResponse.json<ApiResponse<null>>({
+            success: false,
+            message: '创建统计记录失败'
+          }, { status: 500 })
+        }
+      }
+
+      return NextResponse.json<ApiResponse<null>>({
+        success: true,
+        message: '浏览量已更新'
+      })
+    }
+
+    return NextResponse.json<ApiResponse<null>>({
+      success: false,
+      message: '不支持的操作'
+    }, { status: 400 })
+
+  } catch (error) {
+    console.error('更新统计数据失败:', error)
+    return NextResponse.json<ApiResponse<null>>({
+      success: false,
+      message: '服务器错误'
+    }, { status: 500 })
+  }
+}
+
 // 更新模型
 export async function PUT(
   request: NextRequest,
