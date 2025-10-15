@@ -493,6 +493,10 @@ export const ja = {
   ui: {
     scrollIndicator: {
       scrollDown: '下にスクロール'
+    },
+    waterfall: {
+      layoutCalculating: 'レイアウト計算中...',
+      allContentLoaded: 'すべてのコンテンツが読み込まれました'
     }
   }
 }

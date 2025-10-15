@@ -208,7 +208,7 @@ export const zh = {
     sortOptions: {
       latest: '最新发布',
       trending: '热门趋势',
-      mostLiked: '最多点赞'
+      mostLiked: '最多喜欢'
     }
   },
 
@@ -496,6 +496,10 @@ export const zh = {
   ui: {
     scrollIndicator: {
       scrollDown: '向下滚动'
+    },
+    waterfall: {
+      layoutCalculating: '布局计算中...',
+      allContentLoaded: '已加载全部内容'
     }
   }
 }

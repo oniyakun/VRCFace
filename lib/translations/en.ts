@@ -475,6 +475,10 @@ export const en = {
   ui: {
     scrollIndicator: {
       scrollDown: 'Scroll Down'
+    },
+    waterfall: {
+      layoutCalculating: 'Calculating layout...',
+      allContentLoaded: 'All content loaded'
     }
   }
 }

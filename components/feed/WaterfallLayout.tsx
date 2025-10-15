@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { cn } from '@/lib/utils'
+import { useLanguage } from '@/components/i18n/LanguageProvider'
 
 interface WaterfallItem {
   id: string
@@ -30,6 +31,7 @@ export default function WaterfallLayout({
   gap = 16,
   minColumnWidth = 280
 }: WaterfallLayoutProps) {
+  const { t } = useLanguage()
   const containerRef = useRef<HTMLDivElement>(null)
   const itemRefs = useRef<{ [key: string]: HTMLDivElement }>({})
   const [columns, setColumns] = useState(3)
@@ -248,14 +250,14 @@ export default function WaterfallLayout({
       {/* 布局计算状态 */}
       {!isLayoutReady && (
         <div className="flex justify-center items-center py-8">
-          <div className="animate-pulse text-gray-500">布局计算中...</div>
+          <div className="animate-pulse text-gray-500">{t('ui.waterfall.layoutCalculating')}</div>
         </div>
       )}
 
       {/* 无更多内容提示 */}
       {!hasMore && items.length > 0 && (
         <div className="text-center py-8 text-gray-500">
-          已加载全部内容
+          {t('ui.waterfall.allContentLoaded')}
         </div>
       )}
     </div>
