@@ -48,15 +48,15 @@ export const en = {
     description: 'Explore, share and download beautiful VRChat shared blendshapes, create unique virtual identities with creators worldwide',
     viewDocs: 'View Docs',
     goToGithub: 'Go to GitHub',
-    featuredModels: 'Featured Models',
-    featuredDescription: 'Explore the most popular VRChat shared blendshapes in the community, find your perfect model through tag filtering',
-    popularModels: 'Popular Models',
+    featuredModels: 'Featured Avatars',
+    featuredDescription: 'Explore the most popular VRChat shared blendshapes in the community, find your perfect avatar through tag filtering',
+    popularModels: 'Popular Avatars',
     exploreDescription: 'Explore the most popular VRChat shared blendshapes in the community',
     allTags: 'All',
     viewDetails: 'View Details',
-    discoverModels: 'Discover Models',
+    discoverModels: 'Discover Avatars',
     discoverDescription: 'Discover shared blendshapes shared by community creators, find the style that suits you best through tag filtering',
-    noModelsFound: 'No models matching the criteria found',
+    noModelsFound: 'No avatars matching the criteria found',
     tags: {
       all: 'All',
       cute: 'Cute',
@@ -73,7 +73,7 @@ export const en = {
       pluginShare: 'Plugin Sharing',
       pluginShareDesc: 'Easily share and discover VRChat shared blendshapes through plugins',
       tagFilter: 'Tag Filtering',
-      tagFilterDesc: 'Find your favorite models quickly with intelligent tag filtering',
+      tagFilterDesc: 'Find your favorite avatars quickly with intelligent tag filtering',
       freeOpen: 'Free & Open Source',
       freeOpenDesc: 'Completely free platform, open source code, community driven'
     }
@@ -101,8 +101,8 @@ export const en = {
     tags: 'Tags',
     selectedTags: 'Selected Tags',
     availableTags: 'Select Tags',
-    modelName: 'Model Name',
-    modelStyle: 'Model Style',
+    modelName: 'Avatar Name',
+    modelStyle: 'Avatar Style',
     newTag: 'New',
     createNewTag: 'Create New Tag',
     tagName: 'Tag Name',
@@ -126,7 +126,7 @@ export const en = {
     selectAtLeastOneImage: 'Please select at least one preview image',
     publishSuccess: 'Work published successfully!',
     publishFailed: 'Publishing failed, please try again',
-    publishNewModel: 'Publish New Model',
+    publishNewModel: 'Publish New Avatar',
     shareYourWork: 'Share Your VRChat Avatar Creations',
     maxImagesError: 'Maximum 5 images allowed',
     invalidImageFile: 'Invalid image file',
@@ -152,8 +152,8 @@ export const en = {
       firstImageCover: 'The first image will be displayed as cover',
       previewImageAlt: 'Preview image {index}',
       tags: 'Tags',
-      modelName: 'Model Name',
-      modelStyle: 'Model Style',
+      modelName: 'Avatar Name',
+      modelStyle: 'Avatar Style',
       availableTags: 'Available Tags',
       createNewTag: 'Create New Tag',
       tagNamePlaceholder: 'Enter tag name',
@@ -178,8 +178,8 @@ export const en = {
   tags: {
     filter: 'Tag Filter',
     clearAll: 'Clear All',
-    modelName: 'Model Name',
-    modelStyle: 'Model Style',
+    modelName: 'Avatar Name',
+    modelStyle: 'Avatar Style',
     searchPlaceholder: 'Search {type} tags...',
     selected: 'Selected',
     noTags: 'No tags available',
@@ -190,8 +190,8 @@ export const en = {
   tagFilter: {
     title: 'Tag Filter',
     clearAll: 'Clear All',
-    modelName: 'Model Name',
-    modelStyle: 'Model Style',
+    modelName: 'Avatar Name',
+    modelStyle: 'Avatar Style',
     searchPlaceholder: 'Search {type} tags...',
     selected: 'Selected',
     noTags: 'No tags available',
@@ -271,30 +271,30 @@ export const en = {
   },
 
   modelCard: {
-    vrcModel: 'VRC Model',
+    vrcModel: 'VRC Avatar',
     private: 'Private',
-    modelName: 'Model Name',
-    modelStyle: 'Model Style',
+    modelName: 'Avatar Name',
+    modelStyle: 'Avatar Style',
     favorite: 'Favorite',
-    modelNotFound: 'Model not found',
-    loadFailed: 'Failed to load model details',
-    modelDetails: 'Model Details',
+    modelNotFound: 'Avatar not found',
+    loadFailed: 'Failed to load avatar details',
+    modelDetails: 'Avatar Details',
     copied: 'Copied',
     copyFaceData: 'Copy Shared Blendshapes',
-    modelDetailsNotFound: 'Model details not found',
-    modelImages: 'Model Images',
+    modelDetailsNotFound: 'Avatar details not found',
+    modelImages: 'Avatar Images',
     cover: 'Cover',
     faceData: 'Shared Blendshapes'
   },
 
   feed: {
-    noModelsFound: 'No models found',
+    noModelsFound: 'No avatars found',
     adjustFilters: 'Try adjusting your filters or search terms'
   },
 
   feedControls: {
-    searchPlaceholder: 'Search models...',
-    totalCount: 'Total {count} models',
+    searchPlaceholder: 'Search avatars...',
+    totalCount: 'Total {count} avatars',
     gridView: 'Grid View',
     listView: 'List View',
     filter: 'Filter',
@@ -320,8 +320,8 @@ export const en = {
     supportedFormats: 'Supports JPG, PNG formats, multiple selection allowed',
     firstImageAsCover: 'The first image will be displayed as cover',
     tags: 'Tags',
-    modelName: 'Model Name',
-    modelStyle: 'Model Style',
+    modelName: 'Avatar Name',
+    modelStyle: 'Avatar Style',
     selectTags: 'Select Tags',
     createNewTag: 'Create New Tag',
     enterNew: 'Enter new ',
@@ -475,11 +475,11 @@ export const en = {
   // Documentation
   docs: {
     title: 'VRCFace Documentation',
-    subtitle: 'Learn how to use the VRCFace platform to share and manage your VRChat face data, easily find your favorite models through plugins and tag filtering features',
+    subtitle: 'Learn how to use the VRCFace platform to share and manage your VRChat face data, easily find your favorite avatars through plugins and tag filtering features',
     backToHome: 'Back to Home',
     quickStart: {
       title: 'Quick Start',
-      description: 'When you see a model you like, if the author provides face data, you can follow these steps to import the face data into your own model',
+      description: 'When you see an avatar you like, if the author provides face data, you can follow these steps to import the face data into your own avatar',
       viewTutorial: 'View Tutorial'
     },
     blendshapes: {
@@ -503,11 +503,11 @@ export const en = {
     tutorial: {
       quickStart: {
         title: 'Quick Start',
-        subtitle: 'When you see a model you like, if the author provides face data, you can follow these steps to import the face data into your own model',
+        subtitle: 'When you see an avatar you like, if the author provides face data, you can follow these steps to import the face data into your own avatar',
         steps: {
           step1: {
-            title: 'Confirm Model Match',
-            description: 'Make sure the model name on the website is the same as your own model'
+            title: 'Confirm Avatar Match',
+            description: 'Make sure the  on the website is the same as your own avatar'
           },
           step2: {
             title: 'Download Unity Plugin',
@@ -524,7 +524,7 @@ export const en = {
           },
           step5: {
             title: 'Copy Face Data',
-            description: 'Open the model details page and click the "Copy Face Data" button in the upper right corner'
+            description: 'Open the avatar details page and click the "Copy Face Data" button in the upper right corner'
           },
           step6: {
             title: 'Paste Data to Unity',
@@ -574,7 +574,7 @@ export const en = {
             steps: [
               'Click the "Copy to Clipboard" button in the tool window',
               'The data will be copied to the system clipboard in JSON format',
-              'Go to the VRCFace creation page and paste the data to create a new model'
+              'Go to the VRCFace creation page and paste the data to create a new avatar'
             ],
             success: 'Now you can use these BlendShapes data to create and share your virtual avatar in VRCFace.'
           }

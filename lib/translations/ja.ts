@@ -48,15 +48,15 @@ export const ja = {
     description: '美しいVRChat共有ブレンドシェイプを探索、共有、ダウンロードし、世界中のクリエイターと一緒にユニークなバーチャルアイデンティティを作成しましょう',
     viewDocs: 'ドキュメントを見る',
     goToGithub: 'GitHubへ',
-    featuredModels: '人気モデル',
-    featuredDescription: 'コミュニティで最も人気のあるVRChat共有ブレンドシェイプを探索し、タグフィルタリングで完璧なモデルを見つけましょう',
-    popularModels: '人気モデル',
+    featuredModels: '人気アバター',
+    featuredDescription: 'コミュニティで最も人気のあるVRChat共有ブレンドシェイプを探索し、タグフィルタリングで完璧なアバターを見つけましょう',
+    popularModels: '人気アバター',
     exploreDescription: 'コミュニティで最も人気のあるVRChat共有ブレンドシェイプを探索',
     allTags: 'すべて',
     viewDetails: '詳細を見る',
-    discoverModels: 'モデルを発見',
+    discoverModels: 'アバターを発見',
     discoverDescription: 'コミュニティクリエイターが共有する共有ブレンドシェイプを発見し、タグフィルタリングで最適なスタイルを見つけましょう',
-    noModelsFound: '条件に合うモデルが見つかりません',
+    noModelsFound: '条件に合うアバターが見つかりません',
     tags: {
       all: 'すべて',
       cute: 'かわいい',
@@ -73,7 +73,7 @@ export const ja = {
       pluginShare: 'プラグイン共有',
       pluginShareDesc: 'プラグインを通じてVRChat共有ブレンドシェイプを簡単に共有・発見',
       tagFilter: 'タグフィルタリング',
-      tagFilterDesc: 'インテリジェントなタグフィルタリングでお気に入りのモデルを素早く見つける',
+      tagFilterDesc: 'インテリジェントなタグフィルタリングでお気に入りのアバターを素早く見つける',
       freeOpen: '無料・オープンソース',
       freeOpenDesc: '完全無料のプラットフォーム、オープンソースコード、コミュニティ主導'
     }
@@ -83,10 +83,10 @@ export const ja = {
   create: {
     title: '新しい作品を投稿',
     titleField: 'タイトル',
-    titlePlaceholder: 'モデルに素敵な名前をつけてください',
+    titlePlaceholder: 'アバターに素敵な名前をつけてください',
     titleRequired: 'タイトルを入力してください',
     description: '説明',
-    descriptionPlaceholder: 'モデルの特徴、スタイル、使用シーンを説明してください...',
+    descriptionPlaceholder: 'アバターの特徴、スタイル、使用シーンを説明してください...',
     descriptionRequired: '説明を入力してください',
     images: 'プレビュー画像',
     imagesSubtitle: '最大5枚',
@@ -101,8 +101,8 @@ export const ja = {
     tagsRequired: '少なくとも1つのタグを選択してください',
     selectedTags: '選択されたタグ',
     availableTags: 'タグを選択',
-    modelName: 'モデル名',
-    modelStyle: 'モデルスタイル',
+    modelName: 'アバター名',
+    modelStyle: 'アバタースタイル',
     newTag: '新規',
     createNewTag: '新しいタグを作成',
     tagName: 'タグ名',
@@ -134,7 +134,7 @@ export const ja = {
     selectImages: '画像を選択',
     imageUploadTip: 'JPG、PNG形式をサポート、最大5枚まで',
     noTagsSelected: 'タグが選択されていません',
-    selectTagsPrompt: 'モデルに適したタグを選択してください',
+    selectTagsPrompt: 'アバターに適したタグを選択してください',
     faceDataDescription: 'VRChat 共有ブレンドシェイプ（可選）',
     faceDataHelp: '共有ブレンドシェイプを提供すると、他のユーザーがコピーできます',
     visibilitySettings: '公開設定',
@@ -142,7 +142,7 @@ export const ja = {
     makePrivate: '非公開にする',
     publicNote: '公開すると、すべてのユーザーが表示・ダウンロードできます',
     privateNote: '非公開の場合、自分のみが表示できます',
-    publishNewModel: '新しいモデルを投稿',
+    publishNewModel: '新しいアバターを投稿',
     shareYourWork: 'VRChatアバター作品を共有しよう',
     maxImagesError: '最大5枚まで画像をアップロードできます',
     invalidImageFile: '無効な画像ファイル',
@@ -154,9 +154,9 @@ export const ja = {
     redirectingToProfile: 'プロフィールページにリダイレクトしています...',
     form: {
       title: 'タイトル',
-      titlePlaceholder: 'モデルに素敵な名前をつけてください',
+      titlePlaceholder: 'アバターに素敵な名前をつけてください',
       description: '説明',
-      descriptionPlaceholder: 'モデルの特徴、スタイル、使用シーンを説明してください...',
+      descriptionPlaceholder: 'アバターの特徴、スタイル、使用シーンを説明してください...',
       previewImages: 'プレビュー画像',
       maxImages: '最大5枚',
       selectedImages: '{count}枚の画像を選択',
@@ -168,8 +168,8 @@ export const ja = {
       firstImageCover: '最初の画像がカバーとして表示されます',
       previewImageAlt: 'プレビュー画像 {index}',
       tags: 'タグ',
-      modelName: 'モデル名',
-      modelStyle: 'モデルスタイル',
+      modelName: 'アバター名',
+      modelStyle: 'アバタースタイル',
       availableTags: '利用可能なタグ',
       createNewTag: '新しいタグを作成',
       tagNamePlaceholder: 'タグ名を入力',
@@ -186,7 +186,7 @@ export const ja = {
       publicHint: '誰でも表示・ダウンロード可能',
       privateHint: '自分のみ表示可能',
       publishing: '投稿中...',
-      publish: 'モデルを投稿'
+      publish: 'アバターを投稿'
     }
   },
 
@@ -194,8 +194,8 @@ export const ja = {
   tags: {
     filter: 'タグフィルター',
     clearAll: 'すべてクリア',
-    modelName: 'モデル名',
-    modelStyle: 'モデルスタイル',
+    modelName: 'アバター名',
+    modelStyle: 'アバタースタイル',
     searchPlaceholder: '{type}タグを検索...',
     selected: '選択済み',
     noTags: 'タグがありません',
@@ -206,8 +206,8 @@ export const ja = {
   tagFilter: {
     title: 'タグフィルター',
     clearAll: 'すべてクリア',
-    modelName: 'モデル名',
-    modelStyle: 'モデルスタイル',
+    modelName: 'アバター名',
+    modelStyle: 'アバタースタイル',
     searchPlaceholder: '{type}タグを検索...',
     selected: '選択済み',
     noTags: 'タグがありません',
@@ -221,12 +221,12 @@ export const ja = {
     contentManagement: 'コンテンツ管理',
     tagManagement: 'タグ管理',
     systemSettings: 'システム設定',
-    totalModels: '合計{count}個のモデル',
+    totalModels: '合計{count}個のアバター',
     totalTags: '合計{count}個のタグ',
     searchAndFilter: '検索とフィルター',
-    searchModels: 'モデルのタイトルまたは説明を検索...',
+    searchModels: 'アバターのタイトルまたは説明を検索...',
     filterByAuthor: '作者IDでフィルター...',
-    modelList: 'モデルリスト',
+    modelList: 'アバターリスト',
     tagList: 'タグリスト',
     searchTags: 'タグ名または説明を検索...',
     createTag: 'タグを作成',
@@ -286,34 +286,34 @@ export const ja = {
     networkError: 'ネットワークエラーです。後でもう一度お試しください'
   },
 
-  // モデルカード
+  // アバターカード
   modelCard: {
-    vrcModel: 'VRCモデル',
+    vrcModel: 'VRCアバター',
     private: 'プライベート',
-    modelName: 'モデル名',
-    modelStyle: 'モデルスタイル',
+    modelName: 'アバター名',
+    modelStyle: 'アバタースタイル',
     favorite: 'お気に入り',
-    modelNotFound: 'モデルが見つかりません',
+    modelNotFound: 'アバターが見つかりません',
     loadFailed: '読み込みに失敗しました',
-    modelDetails: 'モデル詳細',
+    modelDetails: 'アバター詳細',
     copied: 'コピーしました',
     copyFaceData: '共有ブレンドシェイプをコピー',
-    modelDetailsNotFound: 'モデル詳細が見つかりません',
-    modelImages: 'モデル画像',
+    modelDetailsNotFound: 'アバター詳細が見つかりません',
+    modelImages: 'アバター画像',
     cover: 'カバー',
     faceData: '共有ブレンドシェイプ'
   },
 
   // フィード
   feed: {
-    noModelsFound: 'モデルが見つかりません',
+    noModelsFound: 'アバターが見つかりません',
     adjustFilters: 'フィルターや検索条件を調整してください'
   },
 
   // フィードコントロール
   feedControls: {
-    searchPlaceholder: 'モデルを検索...',
-    totalCount: '合計 {count} 個のモデル',
+    searchPlaceholder: 'アバターを検索...',
+    totalCount: '合計 {count} 個のアバター',
     gridView: 'グリッド表示',
     listView: 'リスト表示',
     filter: 'フィルター',
@@ -324,13 +324,13 @@ export const ja = {
     }
   },
 
-  // モデル編集
+  // アバター編集
   editModel: {
     title: '作品を編集',
     titleField: 'タイトル *',
-    titlePlaceholder: 'モデルに素敵な名前をつけてください',
+    titlePlaceholder: 'アバターに素敵な名前をつけてください',
     description: '説明 *',
-    descriptionPlaceholder: 'モデルの特徴、スタイル、使用シーンを説明してください...',
+    descriptionPlaceholder: 'アバターの特徴、スタイル、使用シーンを説明してください...',
     previewImages: 'プレビュー画像',
     maxImages: '最大5枚',
     coverImage: 'カバー',
@@ -340,8 +340,8 @@ export const ja = {
     supportedFormats: 'JPG、PNG形式をサポート、複数選択可能',
     firstImageAsCover: '最初の画像がカバーとして表示されます',
     tags: 'タグ',
-    modelName: 'モデル名',
-    modelStyle: 'モデルスタイル',
+    modelName: 'アバター名',
+    modelStyle: 'アバタースタイル',
     selectTags: 'タグを選択',
     createNewTag: '新しいタグを作成',
     enterNew: '新しい',
@@ -493,11 +493,11 @@ export const ja = {
   // Documentation
   docs: {
     title: 'VRCFace ドキュメント',
-    subtitle: 'VRCFaceプラットフォームを使用してVRChatの顔データを共有・管理し、プラグインやタグフィルタリング機能を通じてお気に入りのモデルを簡単に見つける方法を学びましょう',
+    subtitle: 'VRCFaceプラットフォームを使用してVRChatの顔データを共有・管理し、プラグインやタグフィルタリング機能を通じてお気に入りのアバターを簡単に見つける方法を学びましょう',
     backToHome: 'ホームに戻る',
     quickStart: {
       title: 'クイックスタート',
-      description: '気に入ったモデルを見つけて、作者が顔データを提供している場合、以下の手順に従って顔データを自分のモデルにインポートできます',
+      description: '気に入ったアバターを見つけて、作者が顔データを提供している場合、以下の手順に従って顔データを自分のアバターにインポートできます',
       viewTutorial: 'チュートリアルを見る'
     },
     blendshapes: {
@@ -521,11 +521,11 @@ export const ja = {
     tutorial: {
       quickStart: {
         title: 'クイックスタート',
-        subtitle: '気に入ったモデルを見つけて、作者が顔データを提供している場合、以下の手順に従って顔データを自分のモデルにインポートできます',
+        subtitle: '気に入ったアバターを見つけて、作者が顔データを提供している場合、以下の手順に従って顔データを自分のアバターにインポートできます',
         steps: {
           step1: {
-            title: 'モデルの一致を確認',
-            description: 'ウェブサイト上のモデル名が自分のモデルと同じであることを確認してください'
+            title: 'アバターの一致を確認',
+            description: 'ウェブサイト上のアバター名が自分のアバターと同じであることを確認してください'
           },
           step2: {
             title: 'Unityプラグインをダウンロード',
@@ -542,7 +542,7 @@ export const ja = {
           },
           step5: {
             title: '顔データをコピー',
-            description: 'モデル詳細ページを開き、右上の「顔データをコピー」ボタンをクリックしてください'
+            description: 'アバター詳細ページを開き、右上の「顔データをコピー」ボタンをクリックしてください'
           },
           step6: {
             title: 'Unityにデータを貼り付け',
@@ -592,7 +592,7 @@ export const ja = {
             steps: [
               'ツールウィンドウの「クリップボードにコピー」ボタンをクリック',
               'データがJSON形式でシステムクリップボードにコピーされます',
-              'VRCFace作成ページに移動してデータを貼り付けて新しいモデルを作成'
+              'VRCFace作成ページに移動してデータを貼り付けて新しいアバターを作成'
             ],
             success: 'これでこれらのBlendShapesデータを使用してVRCFaceでバーチャルアバターを作成・共有できます。'
           }
@@ -608,8 +608,8 @@ export const ja = {
             answer: 'ツールはすべてのBlendShapes名と重み情報を含む標準JSON形式でエクスポートし、VRCFaceプラットフォームと完全に互換性があります。'
           },
           q3: {
-            question: '複数のモデルを一括エクスポートできますか？',
-            answer: '現在、ツールは単一モデルのエクスポートをサポートしています。バッチ処理の場合は、各モデルを個別にエクスポートしてください。'
+            question: '複数のアバターを一括エクスポートできますか？',
+            answer: '現在、ツールは単一アバターのエクスポートをサポートしています。バッチ処理の場合は、各アバターを個別にエクスポートしてください。'
           }
         }
       }
