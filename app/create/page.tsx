@@ -46,7 +46,7 @@ export default function CreatePage() {
   const [imagePreviews, setImagePreviews] = useState<string[]>([])
   const [availableTags, setAvailableTags] = useState<Tag[]>([])
   const [newTagName, setNewTagName] = useState('')
-  const [newTagType, setNewTagType] = useState<'model_name' | 'model_style'>('model_style')
+  const [newTagType, setNewTagType] = useState<'model_name' | 'model_style'>('model_name')
   const [pendingNewTags, setPendingNewTags] = useState<Tag[]>([]) // 存储待提交的新标签
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
