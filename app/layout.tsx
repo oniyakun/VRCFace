@@ -6,6 +6,7 @@ import { ToastProvider } from '@/components/ui/ToastProvider'
 import { LanguageProvider } from '@/components/i18n/LanguageProvider'
 import Navigation from '@/components/layout/Navigation'
 import AuthTokenSync from '@/components/auth/AuthTokenSync'
+import { Analytics } from '@vercel/analytics/react'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -40,6 +41,7 @@ export default function RootLayout({
             </ToastProvider>
           </AuthProvider>
         </LanguageProvider>
+        <Analytics />
       </body>
     </html>
   )
