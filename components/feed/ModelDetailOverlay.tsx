@@ -1,11 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { getFaceModelById } from '@/lib/supabase'
-import { Calendar, User, Eye, Download, Heart, MessageCircle, X, Image as ImageIcon, Copy, Check, User as UserIcon, Palette } from 'lucide-react'
+import { Calendar, User, Eye, Download, Heart, MessageCircle, X, Image as ImageIcon, Copy, Check, User as UserIcon, Palette, Star } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import ImageLightbox from '@/components/ui/ImageLightbox'
 import { useLanguage } from '@/components/i18n/LanguageProvider'
+import { useAuth } from '@/components/auth/AuthProvider'
 import CommentSection from '@/components/comments/CommentSection'
 
 interface ModelDetailOverlayProps {
@@ -16,6 +18,8 @@ interface ModelDetailOverlayProps {
 
 export default function ModelDetailOverlay({ id, onClose, className = '' }: ModelDetailOverlayProps) {
   const { t } = useLanguage()
+  const { user } = useAuth()
+  const router = useRouter()
   const [model, setModel] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, showError] = useState<string | null>(null)
@@ -23,6 +27,12 @@ export default function ModelDetailOverlay({ id, onClose, className = '' }: Mode
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
   const [copySuccess, setCopySuccess] = useState(false)
+  
+  // 点赞和收藏状态
+  const [isLiked, setIsLiked] = useState(false)
+  const [isFavorited, setIsFavorited] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [localStats, setLocalStats] = useState<any>(null)
 
   useEffect(() => {
     const fetchModel = async () => {
@@ -33,6 +43,13 @@ export default function ModelDetailOverlay({ id, onClose, className = '' }: Mode
           showError(result.error)
         } else if (result.data) {
           setModel(result.data)
+          // 初始化统计数据 - 从 stats 对象中获取
+          setLocalStats({
+            likes: result.data.stats?.likes || 0,
+            comments: result.data.stats?.comments || 0,
+            downloads: result.data.stats?.downloads || 0,
+            views: result.data.stats?.views || 0
+          })
           // 增加浏览量
           await incrementViewCount(id)
         } else {
@@ -48,6 +65,104 @@ export default function ModelDetailOverlay({ id, onClose, className = '' }: Mode
 
     fetchModel()
   }, [id])
+
+  // 检查用户的点赞和收藏状态
+  useEffect(() => {
+    if (user && model) {
+      checkUserStatus()
+    }
+  }, [user, model])
+
+  const checkUserStatus = async () => {
+    if (!user) return
+
+    try {
+      // 检查点赞状态
+      const likeResponse = await fetch(`/api/likes?model_id=${id}&user_id=${user.id}`)
+      if (likeResponse.ok) {
+        const likeData = await likeResponse.json()
+        setIsLiked(likeData.isLiked)
+      }
+
+      // 检查收藏状态
+      const favoriteResponse = await fetch(`/api/favorites?model_id=${id}&user_id=${user.id}`)
+      if (favoriteResponse.ok) {
+        const favoriteData = await favoriteResponse.json()
+        setIsFavorited(favoriteData.isFavorited)
+      }
+    } catch (error) {
+      console.error('检查用户状态失败:', error)
+    }
+  }
+
+  const handleLike = async () => {
+    if (!user) {
+      router.push('/auth')
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      const response = await fetch('/api/likes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model_id: id,
+          user_id: user.id
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        const newIsLiked = data.action === 'liked'
+        setIsLiked(newIsLiked)
+        
+        // 更新本地统计数据
+        setLocalStats((prev: any) => ({
+          ...prev,
+          likes: newIsLiked 
+            ? (prev?.likes || 0) + 1 
+            : Math.max((prev?.likes || 0) - 1, 0)
+        }))
+      }
+    } catch (error) {
+      console.error('点赞操作失败:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleFavorite = async () => {
+    if (!user) {
+      router.push('/auth')
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      const response = await fetch('/api/favorites', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model_id: id,
+          user_id: user.id
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setIsFavorited(data.action === 'favorited')
+      }
+    } catch (error) {
+      console.error('收藏操作失败:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   // 增加浏览量的函数
   const incrementViewCount = async (modelId: string) => {
@@ -155,6 +270,35 @@ export default function ModelDetailOverlay({ id, onClose, className = '' }: Mode
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-lg font-semibold">{t('modelCard.modelDetails')}</h2>
           <div className="flex items-center gap-2">
+            {/* 点赞和收藏按钮 */}
+            <button
+              onClick={handleFavorite}
+              disabled={isLoading}
+              className={cn(
+                'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105',
+                isFavorited 
+                  ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' 
+                  : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-yellow-50 hover:text-yellow-600 hover:border-yellow-200'
+              )}
+            >
+              <Star className={cn('w-4 h-4', isFavorited && 'fill-current')} />
+              <span className="hidden sm:inline">{t('modelCard.favorite')}</span>
+            </button>
+            
+            <button
+              onClick={handleLike}
+              disabled={isLoading}
+              className={cn(
+                'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105',
+                isLiked 
+                  ? 'bg-red-100 text-red-700 border border-red-200' 
+                  : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200'
+              )}
+            >
+              <Heart className={cn('w-4 h-4', isLiked && 'fill-current')} />
+              <span>{localStats?.likes || 0}</span>
+            </button>
+            
             {/* 复制按钮 */}
             <button
               onClick={handleCopyModelData}
@@ -239,7 +383,9 @@ export default function ModelDetailOverlay({ id, onClose, className = '' }: Mode
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 mb-2">{model.title}</h1>
                 <p className="text-gray-600 mb-4">{model.description}</p>
-                <div className="flex items-center justify-between text-sm text-gray-600">
+                
+                {/* 作者信息和统计数据 */}
+                <div className="flex items-center justify-between mb-4">
                   <div 
                     className="flex items-center cursor-pointer hover:text-blue-600 transition-colors"
                     onClick={() => window.open(`/profile/${model.author?.id}`, '_blank')}
@@ -266,9 +412,17 @@ export default function ModelDetailOverlay({ id, onClose, className = '' }: Mode
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center">
-                    <Calendar className="w-4 h-4 mr-1" />
-                    <span>{new Date(model.created_at).toLocaleString()}</span>
+                  
+                  {/* 统计信息和操作按钮 */}
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Calendar className="w-4 h-4 mr-1" />
+                      <span>{new Date(model.created_at).toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Eye className="w-4 h-4 mr-1" />
+                      <span>{localStats?.views || 0}</span>
+                    </div>
                   </div>
                 </div>
               </div>
