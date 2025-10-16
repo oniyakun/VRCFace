@@ -2,10 +2,33 @@ import { translations } from './translations'
 
 export type Language = 'zh' | 'en' | 'ja'
 
-// 获取当前语言
-export const getCurrentLanguage = (): Language => {
-  if (typeof window === 'undefined') return 'zh'
-  return (localStorage.getItem('language') as Language) || 'zh'
+// 检测浏览器语言并匹配支持的语言
+function detectBrowserLanguage(): Language {
+  if (typeof window === 'undefined') return 'en'
+  
+  const browserLanguages = navigator.languages || [navigator.language]
+  
+  for (const lang of browserLanguages) {
+    const langCode = lang.split('-')[0] as Language
+    if (['zh', 'en', 'ja'].includes(langCode)) {
+      return langCode
+    }
+  }
+  
+  return 'en'
+}
+
+export function getCurrentLanguage(): Language {
+  if (typeof window === 'undefined') return 'en'
+  
+  const stored = localStorage.getItem('language')
+  if (stored && ['zh', 'en', 'ja'].includes(stored as Language)) {
+    return stored as Language
+  }
+  
+  const detected = detectBrowserLanguage()
+  localStorage.setItem('language', detected)
+  return detected
 }
 
 // 设置语言

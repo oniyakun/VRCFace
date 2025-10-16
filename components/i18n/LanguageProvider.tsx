@@ -16,10 +16,10 @@ interface LanguageProviderProps {
 }
 
 export function LanguageProvider({ children }: LanguageProviderProps) {
-  const [language, setCurrentLanguage] = useState<Language>('zh')
+  const [language, setCurrentLanguage] = useState<Language>('en')
 
   useEffect(() => {
-    // 初始化语言
+    // 初始化语言（会自动检测浏览器语言）
     setCurrentLanguage(getCurrentLanguage())
 
     // 监听语言变化事件
