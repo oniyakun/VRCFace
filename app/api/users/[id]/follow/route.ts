@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@supabase/supabase-js'
 import { ApiResponse } from '@/types'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
 export async function POST(
   request: NextRequest,
@@ -27,6 +30,16 @@ export async function POST(
     }
 
     const token = authorization.replace('Bearer ', '')
+    
+    // 创建带有用户 token 的 Supabase 客户端
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    })
+
+    // 设置用户会话
     const { data: { user }, error: authError } = await supabase.auth.getUser(token)
 
     if (authError || !user) {
@@ -35,6 +48,19 @@ export async function POST(
         error: '无效的授权令牌'
       }, { status: 401 })
     }
+
+    // 创建一个新的客户端实例，使用用户的访问令牌
+    const userSupabase = createClient(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      },
+      global: {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    })
 
     const followerId = user.id
 
@@ -61,7 +87,7 @@ export async function POST(
     }
 
     // 检查是否已经关注
-    const { data: existingFollow } = await supabase
+    const { data: existingFollow } = await userSupabase
       .from('follows')
       .select('id')
       .eq('follower_id', followerId)
@@ -76,7 +102,7 @@ export async function POST(
     }
 
     // 创建关注关系
-    const { error: followError } = await supabase
+    const { error: followError } = await userSupabase
       .from('follows')
       .insert({
         follower_id: followerId,
@@ -138,6 +164,16 @@ export async function DELETE(
     }
 
     const token = authorization.replace('Bearer ', '')
+    
+    // 创建带有用户 token 的 Supabase 客户端
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    })
+
+    // 设置用户会话
     const { data: { user }, error: authError } = await supabase.auth.getUser(token)
 
     if (authError || !user) {
@@ -147,10 +183,23 @@ export async function DELETE(
       }, { status: 401 })
     }
 
+    // 创建一个新的客户端实例，使用用户的访问令牌
+    const userSupabase = createClient(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      },
+      global: {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    })
+
     const followerId = user.id
 
     // 检查关注关系是否存在
-    const { data: existingFollow, error: followCheckError } = await supabase
+    const { data: existingFollow, error: followCheckError } = await userSupabase
       .from('follows')
       .select('id')
       .eq('follower_id', followerId)
@@ -165,7 +214,7 @@ export async function DELETE(
     }
 
     // 删除关注关系
-    const { error: unfollowError } = await supabase
+    const { error: unfollowError } = await userSupabase
       .from('follows')
       .delete()
       .eq('follower_id', followerId)

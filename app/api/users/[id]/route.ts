@@ -143,7 +143,13 @@ export async function GET(
       role: userData.role,
       createdAt: userData.created_at,
       updatedAt: userData.updated_at,
-      stats: statsData || {
+      stats: statsData ? {
+        modelsCount: statsData.models_count || 0,
+        likesReceived: statsData.likes_received || 0,
+        commentsReceived: statsData.comments_received || 0,
+        followersCount: statsData.followers_count || 0,
+        followingCount: statsData.following_count || 0
+      } : {
         modelsCount: 0,
         likesReceived: 0,
         commentsReceived: 0,

@@ -20,6 +20,8 @@ interface UserProfileProps {
 interface UserProfileData extends User {
   models: any[]
   favorites?: any[]
+  followers?: any[]
+  following?: any[]
   isFollowing?: boolean
 }
 
@@ -33,6 +35,10 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
   const [activeTab, setActiveTab] = useState<'models' | 'favorites' | 'followers' | 'following'>('models')
   const [favoritesPage, setFavoritesPage] = useState(1)
   const [favoritesLoading, setFavoritesLoading] = useState(false)
+  const [followersPage, setFollowersPage] = useState(1)
+  const [followersLoading, setFollowersLoading] = useState(false)
+  const [followingPage, setFollowingPage] = useState(1)
+  const [followingLoading, setFollowingLoading] = useState(false)
   const [selectedModelId, setSelectedModelId] = useState<string | null>(null)
   const [editingModel, setEditingModel] = useState<any | null>(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null)
@@ -110,8 +116,12 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
   useEffect(() => {
     if (activeTab === 'favorites' && user && (!user.favorites || favoritesPage > 1)) {
       fetchUserFavorites()
+    } else if (activeTab === 'followers' && user && (!user.followers || followersPage > 1)) {
+      fetchUserFollowers()
+    } else if (activeTab === 'following' && user && (!user.following || followingPage > 1)) {
+      fetchUserFollowing()
     }
-  }, [activeTab, user, favoritesPage])
+  }, [activeTab, user, favoritesPage, followersPage, followingPage])
 
   const fetchUserFavorites = async () => {
     try {
@@ -143,6 +153,102 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
       showError(t('profile.networkError'))
     } finally {
       setFavoritesLoading(false)
+    }
+  }
+
+  const fetchUserFollowers = async () => {
+    try {
+      setFollowersLoading(true)
+      
+      // 获取当前用户的session token
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      // 构建请求头
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json'
+      }
+      
+      // 如果有session，添加Authorization头
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`
+      }
+      
+      const response = await fetch(`/api/users/${userId}/followers?page=${followersPage}&limit=20`, {
+        headers
+      })
+      const result = await response.json()
+
+      if (response.ok && result.success) {
+        if (followersPage === 1) {
+          // 第一页，替换数据
+          setUser(prev => prev ? {
+            ...prev,
+            followers: result.data.followers || []
+          } : null)
+        } else {
+          // 后续页面，追加数据
+          setUser(prev => prev ? {
+            ...prev,
+            followers: [...(prev.followers || []), ...(result.data.followers || [])]
+          } : null)
+        }
+      } else {
+        console.error('获取粉丝列表失败:', result.error)
+        showError(result.error || t('profile.operationFailed'))
+      }
+    } catch (error) {
+      console.error('Fetch followers error:', error)
+      showError(t('profile.networkError'))
+    } finally {
+      setFollowersLoading(false)
+    }
+  }
+
+  const fetchUserFollowing = async () => {
+    try {
+      setFollowingLoading(true)
+      
+      // 获取当前用户的session token
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      // 构建请求头
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json'
+      }
+      
+      // 如果有session，添加Authorization头
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`
+      }
+      
+      const response = await fetch(`/api/users/${userId}/following?page=${followingPage}&limit=20`, {
+        headers
+      })
+      const result = await response.json()
+
+      if (response.ok && result.success) {
+        if (followingPage === 1) {
+          // 第一页，替换数据
+          setUser(prev => prev ? {
+            ...prev,
+            following: result.data.following || []
+          } : null)
+        } else {
+          // 后续页面，追加数据
+          setUser(prev => prev ? {
+            ...prev,
+            following: [...(prev.following || []), ...(result.data.following || [])]
+          } : null)
+        }
+      } else {
+        console.error('获取关注列表失败:', result.error)
+        showError(result.error || t('profile.operationFailed'))
+      }
+    } catch (error) {
+      console.error('Fetch following error:', error)
+      showError(t('profile.networkError'))
+    } finally {
+      setFollowingLoading(false)
     }
   }
 
@@ -196,8 +302,10 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
     if (!user) return
 
     try {
-      const token = localStorage.getItem('accessToken')
-      if (!token) {
+      // 使用Supabase的session获取token
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session?.access_token) {
         showError(t('profile.loginFirst'))
         return
       }
@@ -205,7 +313,7 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
       const response = await fetch(`/api/users/${userId}/follow`, {
         method: user.isFollowing ? 'DELETE' : 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json'
         }
       })
@@ -588,16 +696,154 @@ export default function UserProfile({ userId, isOwnProfile = false }: UserProfil
           )}
 
           {activeTab === 'followers' && (
-            <div className="text-center py-12">
-              <div className="text-gray-400 text-lg mb-2">{t('profile.followersList')}</div>
-              <p className="text-gray-500">{t('profile.featureInDevelopment')}</p>
+            <div>
+              {followersLoading && followersPage === 1 ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                  <p className="text-gray-600">{t('profile.loadingFollowers')}</p>
+                </div>
+              ) : user.followers && user.followers.length > 0 ? (
+                <div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {user.followers.map((follower: any) => (
+                      <div 
+                        key={follower.id} 
+                        className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
+                      >
+                        <div className="flex items-center space-x-4">
+                          <div className="flex-shrink-0">
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-lg font-bold">
+                              {follower.avatar ? (
+                                <img 
+                                  src={follower.avatar} 
+                                  alt={follower.display_name || follower.username}
+                                  className="w-full h-full rounded-full object-cover"
+                                />
+                              ) : (
+                                (follower.display_name || follower.username).charAt(0).toUpperCase()
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-medium text-gray-900 truncate">
+                                {follower.display_name || follower.username}
+                              </p>
+                              {follower.is_verified && (
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                  ✓
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-500 truncate">@{follower.username}</p>
+                            <p className="text-xs text-gray-400 mt-1">
+                              {t('profile.followedAt')} {new Date(follower.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => window.open(`/profile/${follower.id}`, '_blank')}
+                            >
+                              {t('profile.viewProfile')}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {followersLoading && followersPage > 1 && (
+                    <div className="text-center py-4">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto"></div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <div className="text-gray-400 text-lg mb-2">{t('profile.noFollowers')}</div>
+                  <p className="text-gray-500">
+                    {isOwnProfile ? t('profile.noFollowersOwn') : t('profile.noFollowersOther')}
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
           {activeTab === 'following' && (
-            <div className="text-center py-12">
-              <div className="text-gray-400 text-lg mb-2">{t('profile.followingList')}</div>
-              <p className="text-gray-500">{t('profile.featureInDevelopment')}</p>
+            <div>
+              {followingLoading && followingPage === 1 ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                  <p className="text-gray-600">{t('profile.loadingFollowing')}</p>
+                </div>
+              ) : user.following && user.following.length > 0 ? (
+                <div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {user.following.map((following: any) => (
+                      <div 
+                        key={following.id} 
+                        className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
+                      >
+                        <div className="flex items-center space-x-4">
+                          <div className="flex-shrink-0">
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-lg font-bold">
+                              {following.avatar ? (
+                                <img 
+                                  src={following.avatar} 
+                                  alt={following.display_name || following.username}
+                                  className="w-full h-full rounded-full object-cover"
+                                />
+                              ) : (
+                                (following.display_name || following.username).charAt(0).toUpperCase()
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-medium text-gray-900 truncate">
+                                {following.display_name || following.username}
+                              </p>
+                              {following.is_verified && (
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                  ✓
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-500 truncate">@{following.username}</p>
+                            <p className="text-xs text-gray-400 mt-1">
+                              {t('profile.followedAt')} {new Date(following.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => window.open(`/profile/${following.id}`, '_blank')}
+                            >
+                              {t('profile.viewProfile')}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {followingLoading && followingPage > 1 && (
+                    <div className="text-center py-4">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto"></div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <div className="text-gray-400 text-lg mb-2">{t('profile.noFollowing')}</div>
+                  <p className="text-gray-500">
+                    {isOwnProfile ? t('profile.noFollowingOwn') : t('profile.noFollowingOther')}
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -240,11 +240,31 @@ export default function ModelDetailOverlay({ id, onClose, className = '' }: Mode
                 <h1 className="text-2xl font-bold text-gray-900 mb-2">{model.title}</h1>
                 <p className="text-gray-600 mb-4">{model.description}</p>
                 <div className="flex items-center justify-between text-sm text-gray-600">
-                  <div className="flex items-center">
-                    <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center mr-2">
-                      <User className="w-3 h-3 text-gray-600" />
+                  <div 
+                    className="flex items-center cursor-pointer hover:text-blue-600 transition-colors"
+                    onClick={() => window.open(`/profile/${model.author?.id}`, '_blank')}
+                  >
+                    <div className="w-8 h-8 rounded-full overflow-hidden mr-3 bg-gray-200 flex items-center justify-center">
+                      {model.author?.avatar ? (
+                        <img 
+                          src={model.author.avatar} 
+                          alt={model.author.display_name || model.author.username}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-gray-600 font-medium text-sm">
+                          {(model.author?.display_name || model.author?.username || 'U').charAt(0).toUpperCase()}
+                        </span>
+                      )}
                     </div>
-                    <span className="font-medium">{model.author?.username || t('common.unknownAuthor')}</span>
+                    <div className="flex flex-col">
+                      <span className="font-medium text-gray-900">
+                        {model.author?.display_name || model.author?.username || t('common.unknownAuthor')}
+                      </span>
+                      {model.author?.display_name && model.author?.username && (
+                        <span className="text-xs text-gray-500">@{model.author.username}</span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex items-center">
                     <Calendar className="w-4 h-4 mr-1" />

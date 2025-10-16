@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, Grid3X3, List, Search, SlidersHorizontal, TrendingUp, Clock, Heart } from 'lucide-react'
+import { ChevronDown, Grid3X3, List, Search, TrendingUp, Clock, Heart } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useLanguage } from '@/components/i18n/LanguageProvider'
 
@@ -132,12 +132,6 @@ export default function FeedControls({
               <List className="w-4 h-4" />
             </button>
           </div>
-
-          {/* 高级筛选按钮 */}
-          <button className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors">
-            <SlidersHorizontal className="w-4 h-4" />
-            <span className="text-sm">{t('feedControls.filter')}</span>
-          </button>
         </div>
       </div>
     </div>
