@@ -163,10 +163,10 @@ export default function HomeFeed() {
   useEffect(() => {
     let filtered = [...models]
 
-    // 标签筛选
+    // 标签筛选 - 与逻辑：模型必须包含所有选中的标签
     if (selectedTags.length > 0) {
       filtered = filtered.filter(model =>
-        selectedTags.some(selectedTagId => 
+        selectedTags.every(selectedTagId => 
           model.tags?.some(tagRelation => tagRelation.tag.id === selectedTagId)
         )
       )
