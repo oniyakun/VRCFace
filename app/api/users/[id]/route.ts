@@ -132,6 +132,12 @@ export async function GET(
       .order('created_at', { ascending: false })
       .limit(12)
 
+    // 获取用户的实际模型总数（包括私有模型，用于统计显示）
+    const { count: actualModelsCount } = await supabaseAdmin
+      .from('face_models')
+      .select('*', { count: 'exact', head: true })
+      .eq('author_id', userId)
+
     const user = {
       id: userData.id,
       username: userData.username,
@@ -143,18 +149,12 @@ export async function GET(
       role: userData.role,
       createdAt: userData.created_at,
       updatedAt: userData.updated_at,
-      stats: statsData ? {
-        modelsCount: statsData.models_count || 0,
-        likesReceived: statsData.likes_received || 0,
-        commentsReceived: statsData.comments_received || 0,
-        followersCount: statsData.followers_count || 0,
-        followingCount: statsData.following_count || 0
-      } : {
-        modelsCount: 0,
-        likesReceived: 0,
-        commentsReceived: 0,
-        followersCount: 0,
-        followingCount: 0
+      stats: {
+        modelsCount: actualModelsCount || 0, // 使用实际模型数量
+        likesReceived: statsData?.likes_received || 0,
+        commentsReceived: statsData?.comments_received || 0,
+        followersCount: statsData?.followers_count || 0,
+        followingCount: statsData?.following_count || 0
       },
       models: modelsData || [],
       isFollowing
